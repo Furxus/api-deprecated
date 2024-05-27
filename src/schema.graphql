@@ -1,0 +1,42 @@
+scalar Date
+
+directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
+
+input SignupInput {
+    username: String!
+    email: String!
+    password: String!
+    confirmPassword: String!
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+type User {
+    id: String!
+    username: String!
+    nickname: String
+    bio: String
+    createdAt: Date!
+    createdTimestamp: Int!
+    updatedAt: Date!
+    updatedTimestamp: Int!
+}
+
+type Auth @inherits(type: "User") {
+    token: String!
+}
+
+type Mutation {
+    signupUser(input: SignupInput!): String!
+    loginUser(input: LoginInput!): String!
+}
+
+type Query {
+    pulse: String!
+
+    getUser(id: String!): User!
+    getUsers: [User!]!
+}
