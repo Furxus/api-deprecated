@@ -1,4 +1,3 @@
-import logger from "../struct/Logger";
 import UserModel from "../schemas/User";
 import { validateLogin, validateRegister } from "../Validation";
 import bcrypt from "bcrypt";
@@ -6,25 +5,24 @@ import { Snowflake } from "@theinternetfolks/snowflake";
 
 import { decrypt, encrypt } from "../struct/Crypt";
 
+const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
 export default {
     Query: {
         getUser: async (_: any, { id }: { id: string }) => {
             const user = await UserModel.findOne({ id });
-            logger.info(user);
             if (!user) throw new Error("User not found");
             return user;
         },
         getUsers: async () => {
-            const users = await UserModel.find();
-            logger.info(users);
-            return users;
+            return await UserModel.find();
         }
     },
     Mutation: {
         signupUser: async (_: any, { input }: { input: SignupInput }) => {
             const { error, value } = validateRegister.validate({
-                username: input.username,
                 email: input.email,
+                username: input.username,
                 password: input.password,
                 confirmPassword: input.confirmPassword
             });
@@ -32,6 +30,9 @@ export default {
             if (error) throw new Error(error.message);
 
             const { username, email, password, confirmPassword } = value;
+
+            if (username === email)
+                throw new Error("Username and email cannot be the same");
 
             const errors = [];
 
@@ -41,7 +42,7 @@ export default {
 
             if (userExists) {
                 if (userExists.username === username)
-                    errors.push("Username already exists");
+                    errors.push("Username is taken");
                 if (userExists.email === email)
                     errors.push("Email already exists");
             }
@@ -65,29 +66,50 @@ export default {
 
             await user.save();
 
-            return user.generateToken();
+            return true;
         },
         loginUser: async (_: any, { input }: { input: LoginInput }) => {
-            const { error, value } = validateLogin.validate({
-                email: input.email,
+            const { usernameOrEmail } = input;
+
+            if (emailRegex.test(usernameOrEmail)) {
+                const { error } = validateLogin.validate({
+                    email: usernameOrEmail
+                });
+
+                if (error) throw new Error(error.message);
+            } else {
+                const { error } = validateLogin.validate({
+                    username: usernameOrEmail
+                });
+
+                if (error) throw new Error(error.message);
+            }
+
+            const user = await UserModel.findOne({
+                $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
+            });
+
+            if (!user) throw new Error("User not found");
+
+            const {
+                error: passwordError,
+                value: { password }
+            } = validateLogin.validate({
                 password: input.password
             });
 
-            if (error) throw new Error(error.message);
-
-            const { email, password } = value;
-
-            const user = await UserModel.findOne({
-                email
-            });
-
-            if (!user) throw new Error("Email not found");
+            if (passwordError) throw new Error(passwordError.message);
 
             const pass = bcrypt.compareSync(password, decrypt(user.password));
 
             if (!pass) throw new Error("Incorrect password");
 
-            return user.generateToken();
+            const { password: _p, ...rest } = user.toJSON();
+
+            return {
+                token: user.generateToken(),
+                ...rest
+            };
         }
     }
 };

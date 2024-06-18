@@ -6,13 +6,6 @@ const pswdReqTxt =
 const pswdRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
 
 export const validateRegister = Joi.object({
-    username: Joi.string().alphanum().min(4).max(30).required().messages({
-        "string.base": "Username must be a string",
-        "string.empty": "Username cannot be empty",
-        "string.min": "Username must be at least 6 characters",
-        "string.max": "Username must be at most 30 characters",
-        "any.required": "Username is required"
-    }),
     email: Joi.string()
         .email({ minDomainSegments: 2, tlds: false })
         .required()
@@ -22,6 +15,13 @@ export const validateRegister = Joi.object({
             "string.email": "Email must be a valid email address",
             "any.required": "Email is required"
         }),
+    username: Joi.string().alphanum().min(4).max(30).required().messages({
+        "string.base": "Username must be a string",
+        "string.empty": "Username cannot be empty",
+        "string.min": "Username must be at least 4 characters",
+        "string.max": "Username must be at most 30 characters",
+        "any.required": "Username is required"
+    }),
     password: Joi.string().regex(pswdRegex).required().messages({
         "string.base": "Password must be a string",
         "string.empty": "Password cannot be empty",
@@ -41,16 +41,20 @@ export const validateRegister = Joi.object({
 });
 
 export const validateLogin = Joi.object({
-    email: Joi.string()
-        .required()
-        .email({ minDomainSegments: 2, tlds: false })
-        .messages({
-            "string.base": "Email must be a string",
-            "string.empty": "Email cannot be empty",
-            "string.email": "Email must be a valid email address",
-            "any.required": "Email is required"
-        }),
-    password: Joi.string().regex(pswdRegex).required().messages({
+    username: Joi.string().alphanum().min(4).max(30).messages({
+        "string.base": "Username must be a string",
+        "string.empty": "Username cannot be empty",
+        "string.min": "Username must be at least 4 characters",
+        "string.max": "Username must be at most 30 characters",
+        "any.required": "Username is required"
+    }),
+    email: Joi.string().email({ minDomainSegments: 2, tlds: false }).messages({
+        "string.base": "Email must be a string",
+        "string.empty": "Email cannot be empty",
+        "string.email": "Email must be a valid email address",
+        "any.required": "Email is required"
+    }),
+    password: Joi.string().messages({
         "string.base": "Password must be a string",
         "string.empty": "Password cannot be empty",
         "string.pattern": "Password must be a valid password",

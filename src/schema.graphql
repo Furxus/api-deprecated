@@ -1,4 +1,5 @@
 scalar Date
+scalar Timestamp
 
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
@@ -10,19 +11,21 @@ input SignupInput {
 }
 
 input LoginInput {
-    email: String!
+    usernameOrEmail: String!
     password: String!
 }
 
 type User {
     id: String!
     username: String!
+    email: String!
+    avatar: String
     nickname: String
     bio: String
     createdAt: Date!
-    createdTimestamp: Int!
+    createdTimestamp: Timestamp!
     updatedAt: Date!
-    updatedTimestamp: Int!
+    updatedTimestamp: Timestamp!
 }
 
 type Auth @inherits(type: "User") {
@@ -30,8 +33,8 @@ type Auth @inherits(type: "User") {
 }
 
 type Mutation {
-    signupUser(input: SignupInput!): String!
-    loginUser(input: LoginInput!): String!
+    signupUser(input: SignupInput!): Boolean!
+    loginUser(input: LoginInput!): Auth!
 }
 
 type Query {

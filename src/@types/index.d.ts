@@ -6,6 +6,6 @@ declare type SignupInput = {
 };
 
 declare type LoginInput = {
-    email: string;
+    usernameOrEmail: string;
     password: string;
 };
