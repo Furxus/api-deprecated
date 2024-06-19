@@ -1,7 +1,7 @@
 {
     "ignore": ["node_modules"],
     "watch": ["src", ".env"],
-    "exec": "bun test && bun lint && bun start",
+    "exec": "bun tsc && bun lint && bun start",
     "ext": "ts,graphql",
     "env": {
         "NODE_ENV": "development"
