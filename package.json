@@ -10,7 +10,7 @@
     "test": "tsc --noEmit",
     "lint": "eslint . --fix",
     "prettier": "prettier --write .",
-    "beautify": "pnpm lint && pnpm prettier"
+    "beautify": "bun lint && bun prettier"
   },
   "keywords": [],
   "author": "",
