@@ -20,9 +20,15 @@ export default {
     },
     Mutation: {
         signupUser: async (_: any, { input }: { input: SignupInput }) => {
+            const inputEmail = input.email.toLowerCase();
+            const inputUsername = input.username.toLowerCase();
+
+            if (emailRegex.test(inputUsername))
+                throw new Error("Username cannot be an email");
+
             const { error, value } = validateRegister.validate({
-                email: input.email,
-                username: input.username,
+                email: inputEmail,
+                username: inputUsername,
                 password: input.password,
                 confirmPassword: input.confirmPassword
             });
@@ -69,7 +75,7 @@ export default {
             return true;
         },
         loginUser: async (_: any, { input }: { input: LoginInput }) => {
-            const { usernameOrEmail } = input;
+            const usernameOrEmail = input.usernameOrEmail.toLowerCase();
 
             if (emailRegex.test(usernameOrEmail)) {
                 const { error } = validateLogin.validate({
