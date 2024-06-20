@@ -1,8 +1,8 @@
+import { resolvers as scalarResolvers } from "graphql-scalars";
 import users from "./users";
-import { DateScalar } from "../scalars";
 
 export default {
-    Date: DateScalar,
+    ...scalarResolvers,
     Query: {
         pulse: () => "Pulse Check!",
         ...users.Query

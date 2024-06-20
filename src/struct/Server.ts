@@ -16,6 +16,8 @@ import inheritDirective from "graphql-inherits";
 const port = process.env.PORT || 4000;
 const app = express();
 
+import { typeDefs as scalarTypeDefs } from "graphql-scalars";
+
 const typeDefs = gql(
     readFileSync("src/schema.graphql", {
         encoding: "utf-8"
@@ -29,7 +31,10 @@ export default class Server extends ApolloServer {
         super({
             schema: inheritDirective(
                 buildSubgraphSchema({
-                    typeDefs,
+                    typeDefs: {
+                        ...scalarTypeDefs,
+                        ...typeDefs
+                    },
                     resolvers
                 }),
                 "inherits"

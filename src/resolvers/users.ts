@@ -110,7 +110,7 @@ export default {
 
             if (!pass) throw new Error("Incorrect password");
 
-            const { password: _p, ...rest } = user.toJSON();
+            const { password: _p, _id: _d, ...rest } = user.toJSON();
 
             return {
                 token: user.generateToken(),

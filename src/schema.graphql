@@ -1,4 +1,4 @@
-scalar Date
+scalar DateTime
 scalar Timestamp
 
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
@@ -22,9 +22,9 @@ type User {
     avatar: String
     nickname: String
     bio: String
-    createdAt: Date!
+    createdAt: DateTime!
     createdTimestamp: Timestamp!
-    updatedAt: Date!
+    updatedAt: DateTime!
     updatedTimestamp: Timestamp!
 }
 
