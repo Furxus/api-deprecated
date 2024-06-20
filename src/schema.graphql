@@ -38,7 +38,7 @@ type Mutation {
 }
 
 type Query {
-    pulse: String!
+    pulse: Boolean
 
     getUser(id: String!): User!
     getUsers: [User!]!

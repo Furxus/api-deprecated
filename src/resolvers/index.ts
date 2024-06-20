@@ -4,7 +4,7 @@ import users from "./users";
 export default {
     ...scalarResolvers,
     Query: {
-        pulse: () => "Pulse Check!",
+        pulse: () => true,
         ...users.Query
     },
     Mutation: {
