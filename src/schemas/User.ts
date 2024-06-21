@@ -22,7 +22,7 @@ export const userSchema = new Schema(
             unique: true
         },
         avatar: {
-            type: Buffer,
+            type: String,
             default: null
         },
         nickname: {
@@ -58,7 +58,7 @@ export const userSchema = new Schema(
     {
         methods: {
             generateToken: function () {
-                const { password, ...user } = this.toObject();
+                const { password: _p, _id: _d, ...user } = this.toObject();
                 return jwt.sign(user, JWT_SECRET!);
             }
         }
