@@ -13,7 +13,7 @@ import Database from "./Database";
 import logger from "./Logger";
 import inheritDirective from "graphql-inherits";
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 1125;
 const app = express();
 
 import { typeDefs as scalarTypeDefs } from "graphql-scalars";
@@ -57,6 +57,7 @@ export default class Server extends ApolloServer {
                 context: async ({ req }) => ({ req })
             })
         );
+
         app.listen(port, () => {
             logger.info(`Server running on port ${port}`);
         });
