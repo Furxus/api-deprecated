@@ -3,6 +3,7 @@ declare type SignupInput = {
     email: string;
     password: string;
     confirmPassword: string;
+    dateOfBirth: Date;
 };
 
 declare type LoginInput = {

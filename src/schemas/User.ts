@@ -21,6 +21,14 @@ export const userSchema = new Schema(
             required: true,
             unique: true
         },
+        age: {
+            type: Number,
+            required: true
+        },
+        dateOfBirth: {
+            type: Date,
+            required: true
+        },
         avatar: {
             type: String,
             default: null

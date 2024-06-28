@@ -30,12 +30,14 @@ export default {
                 email: inputEmail,
                 username: inputUsername,
                 password: input.password,
-                confirmPassword: input.confirmPassword
+                confirmPassword: input.confirmPassword,
+                dateOfBirth: input.dateOfBirth
             });
 
             if (error) throw new Error(error.message);
 
-            const { username, email, password, confirmPassword } = value;
+            const { username, email, password, confirmPassword, dateOfBirth } =
+                value;
 
             if (username === email)
                 throw new Error("Username and email cannot be the same");
@@ -67,7 +69,11 @@ export default {
                 id: Snowflake.generate(),
                 username,
                 email,
-                password: newPass
+                password: newPass,
+                dateOfBirth,
+                age:
+                    new Date().getFullYear() -
+                    new Date(dateOfBirth).getFullYear()
             });
 
             await user.save();

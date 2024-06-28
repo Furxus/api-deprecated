@@ -73,6 +73,7 @@ input SignupInput {
     email: String!
     password: String!
     confirmPassword: String!
+    dateOfBirth: String!
 }
 
 input LoginInput {
@@ -84,6 +85,8 @@ type User {
     id: String!
     username: String!
     email: EmailAddress!
+    dateOfBirth: Date!
+    age: Int!
     avatar: String
     nickname: String
     bio: String

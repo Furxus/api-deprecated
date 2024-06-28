@@ -37,7 +37,18 @@ export const validateRegister = Joi.object({
         "any.required": "Confirm password is required",
         "any.only": "Confirm password must match password",
         "string.pattern.base": pswdReqTxt
-    })
+    }),
+    dateOfBirth: Joi.date()
+        .max("now")
+        .less(new Date(new Date().setFullYear(new Date().getFullYear() - 13)))
+        .required()
+        .messages({
+            "date.base": "Date of birth must be a date",
+            "date.empty": "Date of birth cannot be empty",
+            "any.required": "Date of birth is required",
+            "date.max": "Date of birth must be in the past",
+            "date.less": "You must be at least 13 years old"
+        })
 });
 
 export const validateLogin = Joi.object({
