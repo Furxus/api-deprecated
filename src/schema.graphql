@@ -85,15 +85,95 @@ type User {
     id: String!
     username: String!
     email: EmailAddress!
-    dateOfBirth: Date!
     age: Int!
+    dateOfBirth: Date!
     avatar: String
+    banner: String
+    globalName: String
+    activity: Activity
     nickname: String
     bio: String
     createdAt: DateTime!
     createdTimestamp: Timestamp!
     updatedAt: DateTime!
     updatedTimestamp: Timestamp!
+    servers: [Server]!
+}
+
+type Server {
+    id: String!
+    name: String!
+    owner: User!
+    members: [Member]!
+    channels: [Channel]!
+    roles: [Role]!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+    icon: String
+    description: String
+}
+
+type Member {
+    id: String!
+    user: User!
+    server: Server!
+    roles: [Role]!
+    permissions: [String]!
+    joinedAt: DateTime!
+    joinedTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Role {
+    id: String!
+    name: String!
+    hoisted: Boolean!
+    mentionable: Boolean!
+    permissions: [String]!
+    server: Server!
+    position: Int!
+    color: String
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Channel {
+    id: String!
+    name: String!
+    server: Server!
+    messages: [Message]!
+    type: String!
+    topic: String
+    position: Int!
+    nsfw: Boolean!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Message {
+    id: String!
+    content: String!
+    channel: Channel!
+    member: Member!
+    server: Server!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Activity {
+    id: String!
+    text: String!
+    lastActive: DateTime!
+    lastActiveTimestamp: Timestamp!
 }
 
 type Auth @inherits(type: "User") {
@@ -103,6 +183,46 @@ type Auth @inherits(type: "User") {
 type Mutation {
     signupUser(input: SignupInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
+
+    # Server Mutations
+    createServer(name: String!): Server!
+    deleteServer(id: String!): Boolean!
+    updateServer(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [String!]!
+    ): Server!
+
+    # Channel Mutations
+    createChannel(serverId: String!, name: String!): Channel!
+    deleteChannel(serverId: String!, id: String!): Boolean!
+    updateChannel(
+        serverId: String!
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [String!]!
+    ): Channel!
+
+    # Message Mutations
+    createMessage(
+        serverId: String!
+        channelId: String!
+        content: String!
+    ): Message!
+    deleteMessage(serverId: String!, channelId: String!, id: String!): Boolean!
+    updateMessage(
+        serverId: String!
+        channelId: String!
+        id: String!
+        content: String!
+    ): Message!
+
+    # User Mutations
+    updateUser(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [String!]!
+    ): User!
 }
 
 type Query {

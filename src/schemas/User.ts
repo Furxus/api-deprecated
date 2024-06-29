@@ -33,9 +33,31 @@ export const userSchema = new Schema(
             type: String,
             default: null
         },
-        nickname: {
+        banner: {
             type: String,
             default: null
+        },
+        globalName: {
+            type: String,
+            default: null
+        },
+        activity: {
+            status: {
+                type: String,
+                default: "offline"
+            },
+            text: {
+                type: String,
+                default: null
+            },
+            lastActive: {
+                type: Date,
+                default: new Date()
+            },
+            lastActiveTimestamp: {
+                type: Number,
+                default: Date.now()
+            }
         },
         bio: {
             type: String,
@@ -61,7 +83,8 @@ export const userSchema = new Schema(
         updatedTimestamp: {
             type: Number,
             default: Date.now()
-        }
+        },
+        servers: [{ type: String, ref: "servers" }]
     },
     {
         methods: {
@@ -72,6 +95,15 @@ export const userSchema = new Schema(
         }
     }
 );
+
+userSchema.pre("updateOne", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
+});
 
 export type IUser = InferSchemaType<typeof userSchema>;
 
