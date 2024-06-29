@@ -65,6 +65,7 @@ scalar SESSN
 scalar DeweyDecimal
 scalar LCCSubclass
 scalar IPCPatent
+scalar Any
 
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
@@ -190,7 +191,7 @@ type Mutation {
     updateServer(
         id: String!
         propertyNames: [String!]!
-        propertyValues: [String!]!
+        propertyValues: [Any!]!
     ): Server!
 
     # Channel Mutations
@@ -200,7 +201,7 @@ type Mutation {
         serverId: String!
         id: String!
         propertyNames: [String!]!
-        propertyValues: [String!]!
+        propertyValues: [Any!]!
     ): Channel!
 
     # Message Mutations
@@ -221,13 +222,63 @@ type Mutation {
     updateUser(
         id: String!
         propertyNames: [String!]!
-        propertyValues: [String!]!
+        propertyValues: [Any!]!
     ): User!
+
+    # Member Mutations
+    addMember(serverId: String!, userId: String!): Member!
+    removeMember(serverId: String!, userId: String!): Boolean!
+    updateMember(
+        serverId: String!
+        userId: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Member!
+
+    # Role Mutations
+    createRole(serverId: String!, name: String!): Role!
+    deleteRole(serverId: String!, id: String!): Boolean!
+    updateRole(
+        serverId: String!
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Role!
+
+    # Activity Mutations
+    updateActivity(userId: String!, status: String, text: String): Activity!
 }
 
 type Query {
     apiStatus: Boolean
 
+    # User Queries
     getUser(id: String!): User!
-    getUsers: [User!]!
+    getUsers: [User]!
+
+    # Server Queries
+    getServer(id: String!): Server!
+    getServers: [Server]!
+
+    # Channel Queries
+    getChannel(serverId: String!, id: String!): Channel!
+    getChannels(serverId: String!): [Channel]!
+
+    # Message Queries
+    getMessage(serverId: String!, channelId: String!, id: String!): Message!
+    getMessages(serverId: String!, channelId: String!): [Message]!
+
+    # Member Queries
+    getMember(serverId: String!, userId: String!): Member!
+    getMembers(serverId: String!): [Member]!
+
+    # Role Queries
+    getRole(serverId: String!, id: String!): Role!
+    getRoles(serverId: String!): [Role]!
+
+    # Activity Queries
+    getActivity(userId: String!): Activity!
+
+    # Auth Queries
+    me: User!
 }
