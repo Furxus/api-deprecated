@@ -105,6 +105,26 @@ export const userSchema = new Schema(
         },
         posts: [{ type: String, ref: "posts" }],
         comments: [{ type: String, ref: "comments" }],
+        blocks: [{ type: String, ref: "users" }],
+        blockedBy: [{ type: String, ref: "users" }],
+        followers: {
+            type: [
+                {
+                    type: String,
+                    ref: "users"
+                }
+            ],
+            default: []
+        },
+        following: {
+            type: [
+                {
+                    type: String,
+                    ref: "users"
+                }
+            ],
+            default: []
+        },
         favorites: {
             privacy: {
                 type: String,

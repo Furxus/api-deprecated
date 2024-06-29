@@ -82,6 +82,13 @@ input LoginInput {
     password: String!
 }
 
+input PostContent {
+    text: String
+    image: String
+    video: String
+    audio: String
+}
+
 type User {
     id: String!
     username: String!
@@ -247,6 +254,54 @@ type Mutation {
 
     # Activity Mutations
     updateActivity(userId: String!, status: String, text: String): Activity!
+
+    # Post Mutations
+    createPost(
+        content: PostContent!
+        hashtags: [String]!
+        mentions: [String]!
+        nsfw: Boolean
+    ): Post!
+    updatePost(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Post!
+    deletePost(id: String!): Boolean!
+
+    # Comment Mutations
+    createComment(
+        postId: String!
+        content: String!
+        mentions: [String]!
+    ): Comment!
+    updateComment(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Comment!
+    deleteComment(id: String!): Boolean!
+
+    # Like Mutations
+    likePost(postId: String!): Boolean!
+    likeComment(commentId: String!): Boolean!
+    unlikePost(postId: String!): Boolean!
+    unlikeComment(commentId: String!): Boolean!
+
+    # Follow Mutations
+    followUser(userId: String!): Boolean!
+    unfollowUser(userId: String!): Boolean!
+
+    # Block Mutations
+    blockUser(userId: String!): Boolean!
+    unblockUser(userId: String!): Boolean!
+
+    # Report Mutations
+    reportUser(userId: String!): Boolean!
+    reportPost(postId: String!): Boolean!
+    reportComment(commentId: String!): Boolean!
+
+    # TODO Notification Mutations
 }
 
 type Query {
@@ -278,6 +333,28 @@ type Query {
 
     # Activity Queries
     getActivity(userId: String!): Activity!
+
+    # Post Queries
+    getPost(id: String!): Post!
+    getPosts: [Post]!
+
+    # Comment Queries
+    getComment(id: String!): Comment!
+    getComments: [Comment]!
+
+    # Like Queries
+    getLikes(postId: String!): [User]!
+    getLikeCount(postId: String!): Int!
+
+    # Follow Queries
+    getFollowers(userId: String!): [User]!
+    getFollowing(userId: String!): [User]!
+
+    # Block Queries
+    getBlockedUsers(userId: String!): [User]!
+
+    # Report Queries
+    getReports: [Report]!
 
     # Auth Queries
     me: User!
