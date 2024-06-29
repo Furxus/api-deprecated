@@ -84,7 +84,63 @@ export const userSchema = new Schema(
             type: Number,
             default: Date.now()
         },
-        servers: [{ type: String, ref: "servers" }]
+        servers: [{ type: String, ref: "servers" }],
+        friends: {
+            type: [
+                {
+                    type: String,
+                    ref: "users"
+                }
+            ],
+            default: []
+        },
+        friendRequests: {
+            type: [
+                {
+                    type: String,
+                    ref: "users"
+                }
+            ],
+            default: []
+        },
+        posts: [{ type: String, ref: "posts" }],
+        comments: [{ type: String, ref: "comments" }],
+        favorites: {
+            privacy: {
+                type: String,
+                default: "public"
+            },
+            posts: {
+                type: [
+                    {
+                        type: String,
+                        ref: "posts"
+                    }
+                ],
+                default: []
+            }
+        },
+        likes: {
+            privacy: {
+                type: String,
+                default: "public"
+            },
+            posts: {
+                type: [
+                    {
+                        type: String,
+                        ref: "posts"
+                    }
+                ],
+                default: []
+            }
+        },
+        reports: [{ type: String, ref: "posts" }],
+        shares: [{ type: String, ref: "posts" }],
+        views: {
+            type: Number,
+            default: 0
+        }
     },
     {
         methods: {
