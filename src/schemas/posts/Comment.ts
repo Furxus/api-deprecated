@@ -29,7 +29,6 @@ export const commentSchema = new Schema({
         ],
         default: []
     },
-
     createdAt: {
         type: Date,
         default: new Date()
