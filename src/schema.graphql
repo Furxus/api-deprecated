@@ -67,6 +67,11 @@ scalar LCCSubclass
 scalar IPCPatent
 scalar Any
 
+# TODO: Change scalars to types
+scalar Report
+scalar Comment
+scalar Post
+
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
 input SignupInput {
