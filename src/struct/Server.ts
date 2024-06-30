@@ -17,6 +17,8 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import Auth from "./Auth";
+import { NotAuthorizedError } from "./Errors";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -45,7 +47,20 @@ const schema = inheritDirective(
     "inherits"
 );
 
-const serverCleanup = useServer({ schema }, wsServer);
+const serverCleanup = useServer(
+    {
+        schema,
+        context: async (ctx) => {
+            const auth = ctx.connectionParams?.auth as string | undefined;
+            if (!auth) throw new NotAuthorizedError();
+            const user = Auth.checkToken(auth);
+            if (!user) throw new NotAuthorizedError();
+
+            return { user };
+        }
+    },
+    wsServer
+);
 
 export default class Server extends ApolloServer {
     readonly database: Database;
@@ -80,7 +95,24 @@ export default class Server extends ApolloServer {
             cors<cors.CorsRequest>(),
             express.json(),
             expressMiddleware(this, {
-                context: async ({ req }) => ({ req })
+                context: async ({ req }) => {
+                    const operationName = req.body.operationName;
+                    switch (operationName) {
+                        case "signupUser":
+                        case "loginUser":
+                        case "apiStatus":
+                            return {};
+                        default: {
+                            const auth = req.headers.authorization;
+                            if (!auth) throw new NotAuthorizedError();
+
+                            const user = Auth.checkToken(auth);
+                            if (!user) throw new NotAuthorizedError();
+
+                            return { user };
+                        }
+                    }
+                }
             })
         );
 

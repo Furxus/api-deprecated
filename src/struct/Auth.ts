@@ -1,4 +1,3 @@
-import { Request } from "express";
 import jwt, {
     TokenExpiredError,
     JsonWebTokenError,
@@ -11,13 +10,7 @@ const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error("No JWT secret provided");
 
 export default class Auth {
-    static checkToken(req: Request) {
-        const header = req.headers.authorization;
-        if (!header) throw new Error("You must be logged in");
-        const token = header.split("Bearer ")[1];
-        if (!token)
-            throw new Error("Authentication token must be 'Bearer [token]'");
-
+    static checkToken(token: string) {
         try {
             // verify token
             return jwt.verify(decrypt(token), JWT_SECRET!);
