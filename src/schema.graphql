@@ -77,9 +77,9 @@ directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 input RegisterInput {
     username: String!
     email: String!
+    displayName: String
     password: String!
     confirmPassword: String!
-    dateOfBirth: String
 }
 
 input LoginInput {

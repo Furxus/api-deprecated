@@ -22,12 +22,10 @@ export const userSchema = new Schema(
             unique: true
         },
         age: {
-            type: Number,
-            required: true
+            type: Number
         },
         dateOfBirth: {
-            type: Date,
-            required: true
+            type: Date
         },
         avatar: {
             type: String,
@@ -37,7 +35,7 @@ export const userSchema = new Schema(
             type: String,
             default: null
         },
-        globalName: {
+        displayName: {
             type: String,
             default: null
         },

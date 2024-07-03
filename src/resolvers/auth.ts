@@ -23,9 +23,9 @@ export default {
                 {
                     email: inputEmail,
                     username: inputUsername,
+                    displayName: input.displayName,
                     password: input.password,
-                    confirmPassword: input.confirmPassword,
-                    dateOfBirth: input.dateOfBirth
+                    confirmPassword: input.confirmPassword
                 },
                 { abortEarly: false }
             );
@@ -45,8 +45,7 @@ export default {
                     }
                 });
 
-            const { username, email, password, confirmPassword, dateOfBirth } =
-                value;
+            const { username, email, password, confirmPassword } = value;
 
             if (username === email)
                 throw new GraphQLError(
@@ -123,11 +122,8 @@ export default {
                 id: Snowflake.generate(),
                 username,
                 email,
-                password: newPass,
-                dateOfBirth,
-                age:
-                    new Date().getFullYear() -
-                    new Date(dateOfBirth).getFullYear()
+                displayName: value.displayName,
+                password: newPass
             });
 
             await user.save();
@@ -137,39 +133,31 @@ export default {
         loginUser: async (_: any, { input }: { input: LoginInput }) => {
             const usernameOrEmail = input.usernameOrEmail.toLowerCase();
 
-            if (emailRegex.test(usernameOrEmail)) {
-                const { error } = validateLogin.validate({
-                    email: usernameOrEmail
-                });
+            const validate: {
+                password: string;
+                email?: string;
+                username?: string;
+            } = {
+                password: input.password
+            };
 
-                if (error)
-                    throw new GraphQLError("Validation Error", {
-                        extensions: {
-                            errors: [
-                                {
-                                    type: "email",
-                                    message: error.message
-                                }
-                            ]
-                        }
-                    });
-            } else {
-                const { error } = validateLogin.validate({
-                    username: usernameOrEmail
-                });
+            if (emailRegex.test(usernameOrEmail))
+                validate.email = usernameOrEmail;
+            else validate.username = usernameOrEmail;
 
-                if (error)
-                    throw new GraphQLError("Validation Error", {
-                        extensions: {
-                            errors: [
-                                {
-                                    type: "username",
-                                    message: error.message
-                                }
-                            ]
-                        }
-                    });
-            }
+            const { error } = validateLogin.validate(validate, {
+                abortEarly: false
+            });
+
+            if (error)
+                throw new GraphQLError("Validation Error", {
+                    extensions: {
+                        errors: error.details.map((e) => ({
+                            type: e.path[0],
+                            message: e.message
+                        }))
+                    }
+                });
 
             const user = await UserModel.findOne({
                 $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
