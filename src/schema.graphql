@@ -74,12 +74,12 @@ scalar Post
 
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
-input SignupInput {
+input RegisterInput {
     username: String!
     email: String!
     password: String!
     confirmPassword: String!
-    dateOfBirth: String!
+    dateOfBirth: String
 }
 
 input LoginInput {
@@ -194,7 +194,7 @@ type Auth @inherits(type: "User") {
 }
 
 type Mutation {
-    signupUser(input: SignupInput!): Boolean!
+    registerUser(input: RegisterInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
 
     # Server Mutations

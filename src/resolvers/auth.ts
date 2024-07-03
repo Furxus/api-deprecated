@@ -4,35 +4,70 @@ import bcrypt from "bcrypt";
 import { Snowflake } from "@theinternetfolks/snowflake";
 
 import { decrypt, encrypt } from "../struct/Crypt";
+import { GraphQLError } from "graphql";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
 export default {
     Mutation: {
-        signupUser: async (_: any, { input }: { input: SignupInput }) => {
+        registerUser: async (_: any, { input }: { input: RegisterInput }) => {
             const inputEmail = input.email.toLowerCase();
             const inputUsername = input.username.toLowerCase();
 
+            const errors = [];
+
             if (emailRegex.test(inputUsername))
-                throw new Error("Username cannot be an email");
+                errors.push("Username cannot be an email");
 
-            const { error, value } = validateRegister.validate({
-                email: inputEmail,
-                username: inputUsername,
-                password: input.password,
-                confirmPassword: input.confirmPassword,
-                dateOfBirth: input.dateOfBirth
-            });
+            const { error, value } = validateRegister.validate(
+                {
+                    email: inputEmail,
+                    username: inputUsername,
+                    password: input.password,
+                    confirmPassword: input.confirmPassword,
+                    dateOfBirth: input.dateOfBirth
+                },
+                { abortEarly: false }
+            );
 
-            if (error) throw new Error(error.message);
+            if (error)
+                error.details.forEach((e) =>
+                    errors.push({
+                        type: e.path[0],
+                        message: e.message
+                    })
+                );
+
+            if (errors.length > 0)
+                throw new GraphQLError("Validation Error", {
+                    extensions: {
+                        errors
+                    }
+                });
 
             const { username, email, password, confirmPassword, dateOfBirth } =
                 value;
 
             if (username === email)
-                throw new Error("Username and email cannot be the same");
-
-            const errors = [];
+                throw new GraphQLError(
+                    "Username and email cannot be the same",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "username",
+                                    message:
+                                        "Username and email cannot be the same"
+                                },
+                                {
+                                    type: "email",
+                                    message:
+                                        "Username and email cannot be the same"
+                                }
+                            ]
+                        }
+                    }
+                );
 
             const userExists = await UserModel.findOne({
                 $or: [{ username }, { email }]
@@ -40,15 +75,44 @@ export default {
 
             if (userExists) {
                 if (userExists.username === username)
-                    errors.push("Username is taken");
+                    throw new GraphQLError("Username already exists", {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "username",
+                                    message: "Username already exists"
+                                }
+                            ]
+                        }
+                    });
                 if (userExists.email === email)
-                    errors.push("Email already exists");
+                    throw new GraphQLError("Email already exists", {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "email",
+                                    message: "Email already exists"
+                                }
+                            ]
+                        }
+                    });
             }
 
             if (password !== confirmPassword)
-                errors.push("Passwords do not match");
-
-            if (errors.length > 0) throw new Error(errors.join(", "));
+                throw new GraphQLError("Passwords do not match", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "password",
+                                message: "Passwords do not match"
+                            },
+                            {
+                                type: "confirmPassword",
+                                message: "Passwords do not match"
+                            }
+                        ]
+                    }
+                });
 
             const salt = bcrypt.genSaltSync(11);
             const hash = bcrypt.hashSync(password, salt);
@@ -78,20 +142,50 @@ export default {
                     email: usernameOrEmail
                 });
 
-                if (error) throw new Error(error.message);
+                if (error)
+                    throw new GraphQLError("Validation Error", {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "email",
+                                    message: error.message
+                                }
+                            ]
+                        }
+                    });
             } else {
                 const { error } = validateLogin.validate({
                     username: usernameOrEmail
                 });
 
-                if (error) throw new Error(error.message);
+                if (error)
+                    throw new GraphQLError("Validation Error", {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "username",
+                                    message: error.message
+                                }
+                            ]
+                        }
+                    });
             }
 
             const user = await UserModel.findOne({
                 $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
             });
 
-            if (!user) throw new Error("User not found");
+            if (!user)
+                throw new GraphQLError("Invalid credentials", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "password",
+                                message: "Invalid credentials"
+                            }
+                        ]
+                    }
+                });
 
             const {
                 error: passwordError,
@@ -100,11 +194,31 @@ export default {
                 password: input.password
             });
 
-            if (passwordError) throw new Error(passwordError.message);
+            if (passwordError)
+                throw new GraphQLError(passwordError.message, {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "password",
+                                message: passwordError.message
+                            }
+                        ]
+                    }
+                });
 
             const pass = bcrypt.compareSync(password, decrypt(user.password));
 
-            if (!pass) throw new Error("Incorrect password");
+            if (!pass)
+                throw new GraphQLError("Invalid credentials", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "password",
+                                message: "Invalid credentials"
+                            }
+                        ]
+                    }
+                });
 
             const { password: _p, _id: _d, ...rest } = user.toJSON();
 

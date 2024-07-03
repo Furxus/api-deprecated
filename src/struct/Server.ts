@@ -98,7 +98,7 @@ export default class Server extends ApolloServer {
                 context: async ({ req }) => {
                     const operationName = req.body.operationName;
                     switch (operationName) {
-                        case "signupUser":
+                        case "registerUser":
                         case "loginUser":
                         case "apiStatus":
                             return {};
