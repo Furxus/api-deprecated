@@ -17,6 +17,7 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { graphqlUploadExpress } from "graphql-upload-ts";
 import Auth from "./Auth";
 import { NotAuthorizedError } from "./Errors";
 
@@ -97,6 +98,7 @@ export default class Server extends ApolloServer {
             expressMiddleware(this, {
                 context: async ({ req }) => {
                     const operationName = req.body.operationName;
+                    if (!operationName) return {};
                     switch (operationName) {
                         case "registerUser":
                         case "loginUser":
@@ -113,6 +115,11 @@ export default class Server extends ApolloServer {
                         }
                     }
                 }
+            }),
+            graphqlUploadExpress({
+                maxFiles: 10,
+                maxFileSize: 10000000,
+                overrideSendResponse: false
             })
         );
 

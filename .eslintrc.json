@@ -59,7 +59,6 @@
             },
             {
                 "selector": "interface",
-                "prefix": ["I"],
                 "format": ["PascalCase"],
                 "leadingUnderscore": "forbid",
                 "trailingUnderscore": "forbid"

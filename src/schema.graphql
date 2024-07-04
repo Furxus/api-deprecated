@@ -67,10 +67,7 @@ scalar LCCSubclass
 scalar IPCPatent
 scalar Any
 
-# TODO: Change scalars to types
-scalar Report
-scalar Comment
-scalar Post
+scalar Upload
 
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
@@ -87,11 +84,18 @@ input LoginInput {
     password: String!
 }
 
-input PostContent {
+type PostContent {
     text: String
     image: String
     video: String
     audio: String
+}
+
+input PostContentInput {
+    text: String
+    image: Upload
+    video: Upload
+    audio: Upload
 }
 
 type User {
@@ -189,6 +193,50 @@ type Activity {
     lastActiveTimestamp: Timestamp!
 }
 
+type Post {
+    id: String!
+    content: PostContent!
+    hashtags: [String]!
+    mentions: [String]!
+    nsfw: Boolean!
+    comments: [Comment]!
+    likes: [User]!
+    reports: [Report]!
+    favorites: [User]!
+    shares: [User]!
+    views: Int!
+    isPinned: Boolean!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Comment {
+    id: String!
+    content: String!
+    post: Post!
+    likes: [User]!
+    reports: [Report]!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Report {
+    id: String!
+    user: User!
+    reason: String!
+    post: Post
+    comment: Comment
+    server: Server
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
 type Auth @inherits(type: "User") {
     token: JWT!
 }
@@ -198,7 +246,7 @@ type Mutation {
     loginUser(input: LoginInput!): Auth!
 
     # Server Mutations
-    createServer(name: String!): Server!
+    createServer(name: String!, icon: Upload): Server!
     deleteServer(id: String!): Boolean!
     updateServer(
         id: String!
@@ -262,7 +310,7 @@ type Mutation {
 
     # Post Mutations
     createPost(
-        content: PostContent!
+        content: PostContentInput!
         hashtags: [String]!
         mentions: [String]!
         nsfw: Boolean

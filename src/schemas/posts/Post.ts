@@ -72,7 +72,7 @@ export const postSchema = new Schema({
         type: [
             {
                 type: String,
-                ref: "users"
+                ref: "reports"
             }
         ],
         default: []
