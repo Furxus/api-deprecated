@@ -221,6 +221,7 @@ type Post {
     content: PostContent!
     hashtags: [String]!
     mentions: [String]!
+    user: User!
     nsfw: Boolean!
     comments: [Comment]!
     likes: [User]!
