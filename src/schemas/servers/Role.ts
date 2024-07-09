@@ -1,6 +1,6 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-export const roleSchema = new Schema({
+const roleSchema = new Schema({
     id: {
         type: String,
         required: true,
@@ -24,7 +24,6 @@ export const roleSchema = new Schema({
     },
     server: {
         type: String,
-        ref: "servers",
         required: true
     },
     position: {
@@ -33,7 +32,7 @@ export const roleSchema = new Schema({
     },
     color: {
         type: String,
-        default: "default"
+        required: true
     },
     createdAt: {
         type: Date,
@@ -51,6 +50,15 @@ export const roleSchema = new Schema({
         type: Number,
         default: Date.now()
     }
+});
+
+roleSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
 });
 
 roleSchema.pre("updateOne", function (next) {

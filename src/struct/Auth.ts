@@ -23,6 +23,8 @@ export default class Auth {
                 logger.error(err.message);
                 throw new Error("Session timed out, please log in again");
             }
+
+            logger.error(err);
         }
     }
 }

@@ -1,6 +1,6 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-export const postSchema = new Schema({
+const postSchema = new Schema({
     id: {
         type: String,
         required: true,
@@ -16,14 +16,12 @@ export const postSchema = new Schema({
     },
     user: {
         type: String,
-        ref: "users",
         required: true
     },
     mentions: {
         type: [
             {
-                type: String,
-                ref: "users"
+                type: String
             }
         ],
         default: []
@@ -53,8 +51,7 @@ export const postSchema = new Schema({
     comments: {
         type: [
             {
-                type: String,
-                ref: "comments"
+                type: String
             }
         ],
         default: []
@@ -62,8 +59,7 @@ export const postSchema = new Schema({
     likes: {
         type: [
             {
-                type: String,
-                ref: "users"
+                type: String
             }
         ],
         default: []
@@ -71,8 +67,7 @@ export const postSchema = new Schema({
     reports: {
         type: [
             {
-                type: String,
-                ref: "reports"
+                type: String
             }
         ],
         default: []
@@ -80,8 +75,7 @@ export const postSchema = new Schema({
     favorites: {
         type: [
             {
-                type: String,
-                ref: "users"
+                type: String
             }
         ],
         default: []
@@ -89,8 +83,7 @@ export const postSchema = new Schema({
     shares: {
         type: [
             {
-                type: String,
-                ref: "users"
+                type: String
             }
         ],
         default: []
@@ -120,6 +113,15 @@ export const postSchema = new Schema({
         type: Number,
         default: Date.now()
     }
+});
+
+postSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
 });
 
 postSchema.pre("updateOne", function (next) {

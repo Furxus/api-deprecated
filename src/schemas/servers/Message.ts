@@ -1,6 +1,6 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-export const messageSchema = new Schema({
+const messageSchema = new Schema({
     id: {
         type: String,
         required: true,
@@ -12,17 +12,14 @@ export const messageSchema = new Schema({
     },
     channel: {
         type: String,
-        ref: "channels",
         required: true
     },
     member: {
         type: String,
-        ref: "members",
         required: true
     },
     server: {
         type: String,
-        ref: "servers",
         required: true
     },
     createdAt: {
@@ -41,6 +38,15 @@ export const messageSchema = new Schema({
         type: Number,
         default: Date.now()
     }
+});
+
+messageSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
 });
 
 messageSchema.pre("updateOne", function (next) {

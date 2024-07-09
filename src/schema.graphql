@@ -102,25 +102,48 @@ type User {
     id: String!
     username: String!
     email: EmailAddress!
-    age: Int!
-    dateOfBirth: Date!
+    age: Int
+    dateOfBirth: Date
     avatar: String
     banner: String
-    globalName: String
-    activity: Activity
-    nickname: String
+    displayName: String
+    activity: Activity!
     bio: String
     createdAt: DateTime!
     createdTimestamp: Timestamp!
     updatedAt: DateTime!
     updatedTimestamp: Timestamp!
     servers: [Server]!
+    friends: [User]!
+    friendRequests: [User]!
+    posts: [Post]!
+    comments: [Comment]!
+    blocks: [User]!
+    blockedBy: [User]!
+    followers: [User]!
+    following: [User]!
+    favorites: [Post]!
+    likes: [Post]!
+    reports: [Report]!
+    shares: [Post]!
+    views: Int!
+}
+
+type Favorites {
+    privacy: String!
+    posts: [Post]!
+}
+
+type Likes {
+    privacy: String!
+    posts: [Post]!
 }
 
 type Server {
     id: String!
     name: String!
-    owner: User!
+    nameAcronym: String!
+    owner: Member!
     members: [Member]!
     channels: [Channel]!
     roles: [Role]!
@@ -238,7 +261,7 @@ type Report {
 }
 
 type Auth @inherits(type: "User") {
-    token: JWT!
+    token: String!
 }
 
 type Mutation {

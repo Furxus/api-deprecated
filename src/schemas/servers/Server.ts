@@ -1,6 +1,6 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-export const serverSchema = new Schema({
+const serverSchema = new Schema({
     id: {
         type: String,
         required: true,
@@ -10,15 +10,17 @@ export const serverSchema = new Schema({
         type: String,
         required: true
     },
+    nameAcronym: {
+        type: String
+    },
     owner: {
-        ref: "users",
+        type: String,
         required: true
     },
     members: {
         type: [
             {
-                type: String,
-                ref: "members"
+                type: String
             }
         ],
         default: []
@@ -26,8 +28,7 @@ export const serverSchema = new Schema({
     channels: {
         type: [
             {
-                type: String,
-                ref: "channels"
+                type: String
             }
         ],
         default: []
@@ -35,8 +36,7 @@ export const serverSchema = new Schema({
     roles: {
         type: [
             {
-                type: String,
-                ref: "roles"
+                type: String
             }
         ],
         default: []
@@ -68,6 +68,32 @@ export const serverSchema = new Schema({
     }
 });
 
+serverSchema.pre("init", function (next) {
+    this.set({
+        nameAcronym: this.get("name")
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+    });
+
+    next();
+});
+
+serverSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now(),
+        nameAcronym: this.get("name")
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+    });
+
+    next();
+});
+
 serverSchema.pre("updateOne", function (next) {
     this.set({
         updatedAt: new Date(),
@@ -76,6 +102,7 @@ serverSchema.pre("updateOne", function (next) {
             .split(" ")
             .map((n: string) => n[0])
             .join("")
+            .toUpperCase()
     });
 
     next();

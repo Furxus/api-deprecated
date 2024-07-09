@@ -1,10 +1,10 @@
 import UserModel from "../schemas/User";
 import { validateLogin, validateRegister } from "../Validation";
 import bcrypt from "bcrypt";
-import { Snowflake } from "@theinternetfolks/snowflake";
 
 import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
+import { Snowflake } from "@theinternetfolks/snowflake";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -208,10 +208,10 @@ export default {
                     }
                 });
 
-            const { password: _p, _id: _d, ...rest } = user.toJSON();
+            const { password: _p, ...rest } = user.toJSON();
 
             return {
-                token: user.generateToken(),
+                token: encrypt(user.generateToken()),
                 ...rest
             };
         }

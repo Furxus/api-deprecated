@@ -93,7 +93,14 @@ export default class Server extends ApolloServer {
         app.use(helmet());
         app.use(
             "/",
-            cors<cors.CorsRequest>(),
+            cors<cors.CorsRequest>({
+                origin: ["http://localhost:5173"],
+                credentials: true
+            }),
+            graphqlUploadExpress({
+                maxFiles: 10,
+                maxFileSize: 10000000
+            }),
             express.json(),
             expressMiddleware(this, {
                 context: async ({ req }) => {
@@ -107,19 +114,16 @@ export default class Server extends ApolloServer {
                         default: {
                             const auth = req.headers.authorization;
                             if (!auth) throw new NotAuthorizedError();
-
-                            const user = Auth.checkToken(auth);
+                            const token = auth.split(" ")[1];
+                            if (token.length < 1)
+                                throw new NotAuthorizedError();
+                            const user = Auth.checkToken(token);
                             if (!user) throw new NotAuthorizedError();
 
                             return { user };
                         }
                     }
                 }
-            }),
-            graphqlUploadExpress({
-                maxFiles: 10,
-                maxFileSize: 10000000,
-                overrideSendResponse: false
             })
         );
 

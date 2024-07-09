@@ -1,11 +1,14 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-export const memberSchema = new Schema({
+const memberSchema = new Schema({
+    id: {
+        type: String,
+        required: true
+    },
     roles: {
         type: [
             {
-                type: String,
-                ref: "roles"
+                type: String
             }
         ],
         default: []
@@ -16,12 +19,10 @@ export const memberSchema = new Schema({
     },
     server: {
         type: String,
-        ref: "servers",
         required: true
     },
     user: {
         type: String,
-        ref: "users",
         required: true
     },
     joinedAt: {
@@ -40,6 +41,15 @@ export const memberSchema = new Schema({
         type: Number,
         default: Date.now()
     }
+});
+
+memberSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
 });
 
 memberSchema.pre("updateOne", function (next) {

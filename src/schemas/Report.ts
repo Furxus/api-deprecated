@@ -1,6 +1,6 @@
-import { Schema } from "mongoose";
+import { InferSchemaType, model, Schema } from "mongoose";
 
-export const reportSchmea = new Schema({
+const reportSchmea = new Schema({
     id: {
         type: String,
         required: true,
@@ -8,20 +8,16 @@ export const reportSchmea = new Schema({
     },
     user: {
         type: String,
-        ref: "users",
         required: true
     },
     post: {
-        type: String,
-        ref: "posts"
+        type: String
     },
     comment: {
-        type: String,
-        ref: "comments"
+        type: String
     },
     server: {
-        type: String,
-        ref: "servers"
+        type: String
     },
     reason: {
         type: String,
@@ -36,3 +32,11 @@ export const reportSchmea = new Schema({
         default: Date.now()
     }
 });
+
+export type IReport = InferSchemaType<typeof reportSchmea>;
+
+const reportModel = model("reports", reportSchmea);
+
+export type ReportDocument = ReturnType<(typeof reportModel)["hydrate"]>;
+
+export default reportModel;

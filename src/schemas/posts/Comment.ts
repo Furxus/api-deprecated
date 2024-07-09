@@ -1,6 +1,6 @@
-import { Schema } from "mongoose";
+import { InferSchemaType, model, Schema } from "mongoose";
 
-export const commentSchema = new Schema({
+const commentSchema = new Schema({
     id: {
         type: String,
         required: true,
@@ -8,7 +8,6 @@ export const commentSchema = new Schema({
     },
     post: {
         type: String,
-        ref: "posts",
         required: true
     },
     content: {
@@ -17,14 +16,12 @@ export const commentSchema = new Schema({
     },
     user: {
         type: String,
-        ref: "users",
         required: true
     },
     mentions: {
         type: [
             {
-                type: String,
-                ref: "users"
+                type: String
             }
         ],
         default: []
@@ -47,6 +44,15 @@ export const commentSchema = new Schema({
     }
 });
 
+commentSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
+});
+
 commentSchema.pre("updateOne", function (next) {
     this.set({
         updatedAt: new Date(),
@@ -55,3 +61,11 @@ commentSchema.pre("updateOne", function (next) {
 
     next();
 });
+
+export type IComment = InferSchemaType<typeof commentSchema>;
+
+const commentModel = model("comments", commentSchema);
+
+export type CommentDocument = ReturnType<(typeof commentModel)["hydrate"]>;
+
+export default commentModel;

@@ -58,7 +58,7 @@ export const validateLogin = Joi.object({
         "string.email": "Email must be a valid email address",
         "any.required": "Email is required"
     }),
-    password: Joi.string().messages({
+    password: Joi.string().required().messages({
         "string.base": "Password must be a string",
         "string.empty": "Password cannot be empty",
         "string.pattern": "Password must be a valid password",

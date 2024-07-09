@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error("No JWT secret provided");
 
-export const userSchema = new Schema(
+const userSchema = new Schema(
     {
         id: {
             type: String,
@@ -82,12 +82,11 @@ export const userSchema = new Schema(
             type: Number,
             default: Date.now()
         },
-        servers: [{ type: String, ref: "servers" }],
+        servers: [{ type: String }],
         friends: {
             type: [
                 {
-                    type: String,
-                    ref: "users"
+                    type: String
                 }
             ],
             default: []
@@ -95,21 +94,19 @@ export const userSchema = new Schema(
         friendRequests: {
             type: [
                 {
-                    type: String,
-                    ref: "users"
+                    type: String
                 }
             ],
             default: []
         },
-        posts: [{ type: String, ref: "posts" }],
-        comments: [{ type: String, ref: "comments" }],
-        blocks: [{ type: String, ref: "users" }],
-        blockedBy: [{ type: String, ref: "users" }],
+        posts: [{ type: String }],
+        comments: [{ type: String }],
+        blocks: [{ type: String }],
+        blockedBy: [{ type: String }],
         followers: {
             type: [
                 {
-                    type: String,
-                    ref: "users"
+                    type: String
                 }
             ],
             default: []
@@ -117,44 +114,23 @@ export const userSchema = new Schema(
         following: {
             type: [
                 {
-                    type: String,
-                    ref: "users"
+                    type: String
                 }
             ],
             default: []
         },
-        favorites: {
-            privacy: {
+        privacy: {
+            favorites: {
                 type: String,
                 default: "public"
             },
-            posts: {
-                type: [
-                    {
-                        type: String,
-                        ref: "posts"
-                    }
-                ],
-                default: []
-            }
-        },
-        likes: {
-            privacy: {
+            likes: {
                 type: String,
                 default: "public"
-            },
-            posts: {
-                type: [
-                    {
-                        type: String,
-                        ref: "posts"
-                    }
-                ],
-                default: []
             }
         },
-        reports: [{ type: String, ref: "posts" }],
-        shares: [{ type: String, ref: "posts" }],
+        reports: [{ type: String }],
+        shares: [{ type: String }],
         views: {
             type: Number,
             default: 0
@@ -169,6 +145,15 @@ export const userSchema = new Schema(
         }
     }
 );
+
+userSchema.pre("save", function (next) {
+    this.set({
+        updatedAt: new Date(),
+        updatedTimestamp: Date.now()
+    });
+
+    next();
+});
 
 userSchema.pre("updateOne", function (next) {
     this.set({
