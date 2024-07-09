@@ -70,7 +70,7 @@ const serverSchema = new Schema({
 
 serverSchema.pre("init", function (next) {
     this.set({
-        nameAcronym: this.get("name")
+        nameAcronym: this.name
             .split(" ")
             .map((n: string) => n[0])
             .join("")
@@ -84,7 +84,7 @@ serverSchema.pre("save", function (next) {
     this.set({
         updatedAt: new Date(),
         updatedTimestamp: Date.now(),
-        nameAcronym: this.get("name")
+        nameAcronym: this.name
             .split(" ")
             .map((n: string) => n[0])
             .join("")

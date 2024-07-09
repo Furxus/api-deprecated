@@ -20,6 +20,7 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { graphqlUploadExpress } from "graphql-upload-ts";
 import Auth from "./Auth";
 import { NotAuthorizedError } from "./Errors";
+import RequestLog from "../schemas/RequestLogs";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -104,25 +105,55 @@ export default class Server extends ApolloServer {
             express.json(),
             expressMiddleware(this, {
                 context: async ({ req }) => {
-                    const operationName = req.body.operationName;
-                    if (!operationName) return {};
-                    switch (operationName) {
-                        case "registerUser":
-                        case "loginUser":
-                        case "apiStatus":
-                            return {};
-                        default: {
-                            const auth = req.headers.authorization;
-                            if (!auth) throw new NotAuthorizedError();
-                            const token = auth.split(" ")[1];
-                            if (token.length < 1)
-                                throw new NotAuthorizedError();
-                            const user = Auth.checkToken(token);
-                            if (!user) throw new NotAuthorizedError();
+                    let ip =
+                        req.headers["x-forwarded-for"] ||
+                        req.socket.remoteAddress;
 
-                            return { user };
-                        }
+                    if (ip) {
+                        ip = ip.toString();
+                        if (ip.startsWith("::ffff:")) ip = ip.substring(7);
                     }
+
+                    const userAgent = req.headers["user-agent"];
+                    const acceptLanguage = req.headers["accept-language"];
+
+                    let schema = await RequestLog.findOne({
+                        ips: { $in: [ip] }
+                    });
+
+                    if (!schema) schema = new RequestLog({ ips: [ip] });
+
+                    if (ip && !schema.ips.includes(ip)) schema.ips.push(ip);
+
+                    if (userAgent && !schema.agents.includes(userAgent))
+                        schema.agents.push(userAgent);
+
+                    if (
+                        acceptLanguage &&
+                        !schema.languages.includes(acceptLanguage)
+                    )
+                        schema.languages.push(acceptLanguage);
+
+                    await schema.save();
+
+                    const token =
+                        req.headers.authorization?.split(" ")[1] || null;
+
+                    if (token) {
+                        const user = Auth.checkToken(token);
+                        if (!user) throw new NotAuthorizedError();
+                        if (typeof user === "string")
+                            throw new NotAuthorizedError();
+
+                        if (!schema.associatedUser)
+                            schema.associatedUser = user.id;
+
+                        await schema.save();
+
+                        return { user };
+                    }
+
+                    return {};
                 }
             })
         );
