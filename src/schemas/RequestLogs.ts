@@ -17,9 +17,9 @@ const requestLogSchema = new Schema({
         type: [String],
         default: []
     },
-    associatedUser: {
-        type: String,
-        default: null
+    associatedUsers: {
+        type: [String],
+        default: []
     },
     firstRequest: {
         type: Date,

@@ -145,8 +145,8 @@ export default class Server extends ApolloServer {
                         if (typeof user === "string")
                             throw new NotAuthorizedError();
 
-                        if (!schema.associatedUser)
-                            schema.associatedUser = user.id;
+                        if (!schema.associatedUsers.includes(user.id))
+                            schema.associatedUsers.push(user.id);
 
                         await schema.save();
 
