@@ -1,6 +1,7 @@
 import UserModel from "../schemas/User";
 import { validateLogin, validateRegister } from "../Validation";
 import bcrypt from "bcrypt";
+import moment from "moment";
 
 import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
@@ -13,6 +14,20 @@ export default {
         registerUser: async (_: any, { input }: { input: RegisterInput }) => {
             const inputEmail = input.email.toLowerCase();
             const inputUsername = input.username.toLowerCase();
+            const dateOfBirth = moment(new Date(input.dateOfBirth));
+
+            // Check if the user is at least 13 years old
+            if (moment().diff(dateOfBirth, "years") < 13)
+                throw new GraphQLError("You must be at least 13 years old", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "dateOfBirth",
+                                message: "You must be at least 13 years old"
+                            }
+                        ]
+                    }
+                });
 
             const errors = [];
 
@@ -123,7 +138,10 @@ export default {
                 username,
                 email,
                 displayName: value.displayName,
-                password: newPass
+                password: newPass,
+                dateOfBirth: dateOfBirth.toDate(),
+                createdAt: new Date(),
+                createdTimestamp: Date.now()
             });
 
             await user.save();

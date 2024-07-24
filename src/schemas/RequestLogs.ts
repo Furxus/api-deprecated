@@ -23,19 +23,17 @@ const requestLogSchema = new Schema({
     },
     firstRequest: {
         type: Date,
-        default: new Date()
+        required: true
     },
     firstRequestTimestamp: {
         type: Number,
-        default: Date.now()
+        required: true
     },
     lastRequest: {
-        type: Date,
-        default: new Date()
+        type: Date
     },
     lastRequestTimestamp: {
-        type: Number,
-        default: Date.now()
+        type: Number
     },
     totalRequests: {
         type: Number,

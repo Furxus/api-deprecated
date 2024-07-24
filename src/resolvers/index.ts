@@ -10,6 +10,7 @@ import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
 import CommentSchema from "schemas/posts/Comment";
 import ReportSchema from "schemas/Report";
+import ChannelSchema from "schemas/servers/Channel";
 
 export default {
     ...scalarResolvers,
@@ -62,6 +63,10 @@ export default {
             MessageSchema.find({
                 server: parent.server,
                 channel: parent.id
+            }),
+        category: async (parent: any) =>
+            ChannelSchema.findOne({
+                id: parent.category
             })
     },
     Message: {
@@ -174,5 +179,8 @@ export default {
         ...auth.Mutation,
         ...servers.Mutation,
         ...users.Mutation
+    },
+    Subscription: {
+        ...servers.Subscription
     }
 };

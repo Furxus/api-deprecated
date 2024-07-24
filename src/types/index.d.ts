@@ -4,6 +4,7 @@ declare type RegisterInput = {
     displayName: string;
     password: string;
     confirmPassword: string;
+    dateOfBirth: string;
 };
 
 declare type LoginInput = {

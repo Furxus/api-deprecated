@@ -7,7 +7,6 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import resolvers from "../resolvers";
 import { readFileSync } from "fs";
-import { ApolloServerPluginInlineTraceDisabled } from "@apollo/server/plugin/disabled";
 import Database from "./Database";
 import logger from "./Logger";
 import inheritDirective from "graphql-inherits";
@@ -21,6 +20,7 @@ import { graphqlUploadExpress } from "graphql-upload-ts";
 import Auth from "./Auth";
 import { NotAuthorizedError } from "./Errors";
 import RequestLog from "../schemas/RequestLogs";
+import { PubSub } from "graphql-subscriptions";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -35,7 +35,7 @@ const typeDefs = gql(
 
 const wsServer = new WebSocketServer({
     server: httpServer,
-    path: "/ws"
+    path: "/"
 });
 
 const schema = inheritDirective(
@@ -53,16 +53,27 @@ const serverCleanup = useServer(
     {
         schema,
         context: async (ctx) => {
-            const auth = ctx.connectionParams?.auth as string | undefined;
+            const auth = ctx.connectionParams?.token as string | undefined;
             if (!auth) throw new NotAuthorizedError();
             const user = Auth.checkToken(auth);
             if (!user) throw new NotAuthorizedError();
 
             return { user };
+        },
+        onConnect: async (ctx) => {
+            // Check authentication every time a client connects.
+            const auth = ctx.connectionParams?.auth as string | undefined;
+            if (auth) {
+                // You can return false to close the connection  or throw an explicit error
+
+                throw new Error("Auth token missing!");
+            }
         }
     },
     wsServer
 );
+
+export const pubsub = new PubSub();
 
 export default class Server extends ApolloServer {
     readonly database: Database;
@@ -71,7 +82,6 @@ export default class Server extends ApolloServer {
         super({
             schema,
             plugins: [
-                ApolloServerPluginInlineTraceDisabled(),
                 ApolloServerPluginDrainHttpServer({ httpServer }),
                 {
                     async serverWillStart() {
@@ -94,10 +104,7 @@ export default class Server extends ApolloServer {
         app.use(helmet());
         app.use(
             "/",
-            cors<cors.CorsRequest>({
-                origin: ["http://localhost:5173"],
-                credentials: true
-            }),
+            cors<cors.CorsRequest>(),
             graphqlUploadExpress({
                 maxFiles: 10,
                 maxFileSize: 10000000
@@ -121,7 +128,12 @@ export default class Server extends ApolloServer {
                         ips: { $in: [ip] }
                     });
 
-                    if (!schema) schema = new RequestLog({ ips: [ip] });
+                    if (!schema)
+                        schema = new RequestLog({
+                            ips: [ip],
+                            firstRequest: new Date(),
+                            firstRequestTimestamp: Date.now()
+                        });
 
                     if (ip && !schema.ips.includes(ip)) schema.ips.push(ip);
 
@@ -153,12 +165,12 @@ export default class Server extends ApolloServer {
                         return { user };
                     }
 
-                    return {};
+                    return { user: null };
                 }
             })
         );
 
-        app.listen(port, () => {
+        httpServer.listen(port, () => {
             logger.info(`Server running on port ${port}`);
         });
     }

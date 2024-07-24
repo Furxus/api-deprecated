@@ -27,19 +27,17 @@ const memberSchema = new Schema({
     },
     joinedAt: {
         type: Date,
-        default: new Date()
+        required: true
     },
     joinedTimestamp: {
         type: Number,
-        default: Date.now()
+        required: true
     },
     updatedAt: {
-        type: Date,
-        default: new Date()
+        type: Date
     },
     updatedTimestamp: {
-        type: Number,
-        default: Date.now()
+        type: Number
     }
 });
 

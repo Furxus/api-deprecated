@@ -36,19 +36,17 @@ const roleSchema = new Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date()
+        required: true
     },
     createdTimestamp: {
         type: Number,
-        default: Date.now()
+        required: true
     },
     updatedAt: {
-        type: Date,
-        default: new Date()
+        type: Date
     },
     updatedTimestamp: {
-        type: Number,
-        default: Date.now()
+        type: Number
     }
 });
 

@@ -25,7 +25,8 @@ const userSchema = new Schema(
             type: Number
         },
         dateOfBirth: {
-            type: Date
+            type: Date,
+            required: true
         },
         avatar: {
             type: String,
@@ -49,12 +50,10 @@ const userSchema = new Schema(
                 default: null
             },
             lastActive: {
-                type: Date,
-                default: new Date()
+                type: Date
             },
             lastActiveTimestamp: {
-                type: Number,
-                default: Date.now()
+                type: Number
             }
         },
         bio: {
@@ -67,20 +66,17 @@ const userSchema = new Schema(
         },
         createdAt: {
             type: Date,
-            default: new Date()
+            required: true
         },
         createdTimestamp: {
             type: Number,
-            required: true,
-            default: Date.now()
+            required: true
         },
         updatedAt: {
-            type: Date,
-            default: new Date()
+            type: Date
         },
         updatedTimestamp: {
-            type: Number,
-            default: Date.now()
+            type: Number
         },
         servers: [{ type: String }],
         friends: {
@@ -149,7 +145,11 @@ const userSchema = new Schema(
 userSchema.pre("save", function (next) {
     this.set({
         updatedAt: new Date(),
-        updatedTimestamp: Date.now()
+        updatedTimestamp: Date.now(),
+        activity: {
+            lastActive: new Date(),
+            lastActiveTimestamp: Date.now()
+        }
     });
 
     next();
@@ -158,7 +158,11 @@ userSchema.pre("save", function (next) {
 userSchema.pre("updateOne", function (next) {
     this.set({
         updatedAt: new Date(),
-        updatedTimestamp: Date.now()
+        updatedTimestamp: Date.now(),
+        activity: {
+            lastActive: new Date(),
+            lastActiveTimestamp: Date.now()
+        }
     });
 
     next();

@@ -43,20 +43,17 @@ const serverSchema = new Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date()
+        required: true
     },
     createdTimestamp: {
         type: Number,
-        required: true,
-        default: Date.now()
+        required: true
     },
     updatedAt: {
-        type: Date,
-        default: new Date()
+        type: Date
     },
     updatedTimestamp: {
-        type: Number,
-        default: Date.now()
+        type: Number
     },
     icon: {
         type: String,
@@ -66,18 +63,6 @@ const serverSchema = new Schema({
         type: String,
         default: null
     }
-});
-
-serverSchema.pre("init", function (next) {
-    this.set({
-        nameAcronym: this.name
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase()
-    });
-
-    next();
 });
 
 serverSchema.pre("save", function (next) {

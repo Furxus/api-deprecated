@@ -77,6 +77,7 @@ input RegisterInput {
     displayName: String
     password: String!
     confirmPassword: String!
+    dateOfBirth: String!
 }
 
 input LoginInput {
@@ -187,6 +188,7 @@ type Channel {
     name: String!
     server: Server!
     messages: [Message]!
+    category: String
     type: String!
     topic: String
     position: Int!
@@ -391,6 +393,7 @@ type Query {
     # Server Queries
     getServer(id: String!): Server!
     getServers: [Server]!
+    getUserServers(id: String): [Server]!
 
     # Channel Queries
     getChannel(serverId: String!, id: String!): Channel!
@@ -435,4 +438,14 @@ type Query {
 
     # Auth Queries
     me: User!
+}
+
+type Subscription {
+    # Server Subscriptions
+    serverCreated: Server!
+
+    # Message Subscriptions
+    messageCreated(serverId: String!, channelId: String!): Message!
+    messageUpdated(serverId: String!, channelId: String!): Message!
+    messageDeleted(serverId: String!, channelId: String!): Boolean!
 }
