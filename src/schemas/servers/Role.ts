@@ -18,10 +18,7 @@ const roleSchema = new Schema({
         type: Boolean,
         default: false
     },
-    permissions: {
-        type: Array,
-        default: []
-    },
+    permissions: [String],
     server: {
         type: String,
         required: true
@@ -42,12 +39,8 @@ const roleSchema = new Schema({
         type: Number,
         required: true
     },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    }
+    updatedAt: Date,
+    updatedTimestamp: Number
 });
 
 roleSchema.pre("save", function (next) {

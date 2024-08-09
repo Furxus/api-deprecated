@@ -14,14 +14,7 @@ const channelSchema = new Schema({
         type: String,
         required: true
     },
-    messages: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
+    messages: [String],
     category: {
         type: String,
         default: null
@@ -36,7 +29,7 @@ const channelSchema = new Schema({
     },
     position: {
         type: Number,
-        default: 0
+        required: true
     },
     nsfw: {
         type: Boolean,
@@ -50,12 +43,8 @@ const channelSchema = new Schema({
         type: Number,
         required: true
     },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    }
+    updatedAt: Date,
+    updatedTimestamp: Number
 });
 
 channelSchema.pre("save", function (next) {

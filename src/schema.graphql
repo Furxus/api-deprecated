@@ -140,6 +140,17 @@ type Likes {
     posts: [Post]!
 }
 
+type Invite {
+    code: String!
+    uses: Int!
+    maxUses: Int!
+    createdBy: User!
+    expiresAt: DateTime
+    expiresTimestamp: Timestamp
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+}
+
 type Server {
     id: String!
     name: String!
@@ -148,12 +159,24 @@ type Server {
     members: [Member]!
     channels: [Channel]!
     roles: [Role]!
+    invites: [Invite]!
     createdAt: DateTime!
     createdTimestamp: Timestamp!
     updatedAt: DateTime!
     updatedTimestamp: Timestamp!
     icon: String
     description: String
+}
+
+type ServerSettings {
+    id: String!
+    channels: [Channel]!
+    roles: [Role]!
+    invites: [Invite]!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
 }
 
 type Member {
@@ -273,6 +296,8 @@ type Mutation {
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
+    joinServer(code: String!): Server!
+    leaveServer(id: String!): Boolean!
     deleteServer(id: String!): Boolean!
     updateServer(
         id: String!
@@ -392,8 +417,10 @@ type Query {
 
     # Server Queries
     getServer(id: String!): Server!
+    getServerSettings(id: String!): ServerSettings!
     getServers: [Server]!
     getUserServers(id: String): [Server]!
+    checkServerAccess(id: String!): Boolean!
 
     # Channel Queries
     getChannel(serverId: String!, id: String!): Channel!
@@ -443,6 +470,7 @@ type Query {
 type Subscription {
     # Server Subscriptions
     serverCreated: Server!
+    serverJoined: Server!
 
     # Message Subscriptions
     messageCreated(serverId: String!, channelId: String!): Message!

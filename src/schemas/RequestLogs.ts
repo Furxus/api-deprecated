@@ -1,26 +1,11 @@
 import { Schema, InferSchemaType, model } from "mongoose";
 
 const requestLogSchema = new Schema({
-    ips: {
-        type: [String],
-        default: []
-    },
-    agents: {
-        type: [String],
-        default: []
-    },
-    languages: {
-        type: [String],
-        default: []
-    },
-    locations: {
-        type: [String],
-        default: []
-    },
-    associatedUsers: {
-        type: [String],
-        default: []
-    },
+    ips: [String],
+    agents: [String],
+    languages: [String],
+    locations: [String],
+    associatedUsers: [String],
     firstRequest: {
         type: Date,
         required: true
@@ -29,12 +14,8 @@ const requestLogSchema = new Schema({
         type: Number,
         required: true
     },
-    lastRequest: {
-        type: Date
-    },
-    lastRequestTimestamp: {
-        type: Number
-    },
+    lastRequest: Date,
+    lastRequestTimestamp: Number,
     totalRequests: {
         type: Number,
         default: 0

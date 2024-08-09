@@ -40,8 +40,6 @@
                 "varsIgnorePattern": "^_",
                 "ignoreRestSiblings": true
             }
-        ],
-        "@typescript-eslint/semi": "error",
-        "@typescript-eslint/no-extra-semi": "error"
+        ]
     }
 }

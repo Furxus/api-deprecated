@@ -34,6 +34,12 @@ export default {
                 server: parent.id
             })
     },
+    Invite: {
+        createdBy: async (parent: any) =>
+            UserSchema.findOne({
+                id: parent.createdBy
+            })
+    },
     Member: {
         user: async (parent: any) =>
             UserSchema.findOne({

@@ -5,18 +5,8 @@ const memberSchema = new Schema({
         type: String,
         required: true
     },
-    roles: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    permissions: {
-        type: Array,
-        default: []
-    },
+    roles: [String],
+    permissions: [],
     server: {
         type: String,
         required: true
@@ -33,12 +23,8 @@ const memberSchema = new Schema({
         type: Number,
         required: true
     },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    }
+    updatedAt: Date,
+    updatedTimestamp: Number
 });
 
 memberSchema.pre("save", function (next) {

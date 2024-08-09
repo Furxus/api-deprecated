@@ -10,15 +10,9 @@ const reportSchmea = new Schema({
         type: String,
         required: true
     },
-    post: {
-        type: String
-    },
-    comment: {
-        type: String
-    },
-    server: {
-        type: String
-    },
+    post: String,
+    comment: String,
+    server: String,
     reason: {
         type: String,
         required: true

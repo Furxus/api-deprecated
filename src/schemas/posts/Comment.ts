@@ -18,14 +18,7 @@ const commentSchema = new Schema({
         type: String,
         required: true
     },
-    mentions: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
+    mentions: [String],
     createdAt: {
         type: Date,
         required: true
@@ -34,12 +27,8 @@ const commentSchema = new Schema({
         type: Number,
         required: true
     },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    }
+    updatedAt: Date,
+    updatedTimestamp: Number
 });
 
 commentSchema.pre("save", function (next) {

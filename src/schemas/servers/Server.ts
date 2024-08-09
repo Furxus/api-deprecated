@@ -1,69 +1,114 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
-const serverSchema = new Schema({
-    id: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    name: {
-        type: String,
-        required: true
-    },
-    nameAcronym: {
-        type: String
-    },
-    owner: {
-        type: String,
-        required: true
-    },
-    members: {
-        type: [
+const serverSchema = new Schema(
+    {
+        id: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        nameAcronym: {
+            type: String
+        },
+        owner: {
+            type: String,
+            required: true
+        },
+        invites: [
             {
-                type: String
+                code: {
+                    type: String,
+                    required: true
+                },
+                uses: {
+                    type: Number,
+                    default: 0
+                },
+                maxUses: {
+                    type: Number,
+                    default: 0
+                },
+                createdBy: {
+                    type: String,
+                    required: true
+                },
+                expiresAt: {
+                    type: Date,
+                    default: null
+                },
+                expiresTimestamp: {
+                    type: Number,
+                    default: null
+                },
+                createdAt: {
+                    type: Date,
+                    required: true
+                },
+                createdTimestamp: {
+                    type: Number,
+                    required: true
+                }
             }
         ],
-        default: []
+        members: [String],
+        channels: [String],
+        roles: [String],
+        createdAt: {
+            type: Date,
+            required: true
+        },
+        createdTimestamp: {
+            type: Number,
+            required: true
+        },
+        updatedAt: Date,
+        updatedTimestamp: Number,
+        icon: {
+            type: String,
+            default: null
+        },
+        description: {
+            type: String,
+            default: null
+        }
     },
-    channels: {
-        type: [
-            {
-                type: String
+    {
+        methods: {
+            generateInviteLink: function (
+                serverId: string,
+                memberId: string,
+                maxUses: number = 0,
+                expiresAt?: Date
+            ) {
+                // Generate 9 random characters
+                const characters =
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                let code = "";
+                for (let i = 0; i < 9; i++) {
+                    code += characters.charAt(
+                        Math.floor(Math.random() * characters.length)
+                    );
+                }
+
+                this.invites.push({
+                    code,
+                    maxUses,
+                    expiresAt,
+                    server: serverId,
+                    createdBy: memberId,
+                    createdAt: new Date(),
+                    createdTimestamp: Date.now()
+                });
+
+                return code;
             }
-        ],
-        default: []
-    },
-    roles: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    createdAt: {
-        type: Date,
-        required: true
-    },
-    createdTimestamp: {
-        type: Number,
-        required: true
-    },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    },
-    icon: {
-        type: String,
-        default: null
-    },
-    description: {
-        type: String,
-        default: null
+        }
     }
-});
+);
 
 serverSchema.pre("save", function (next) {
     this.set({

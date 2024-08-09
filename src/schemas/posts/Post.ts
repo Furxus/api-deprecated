@@ -6,26 +6,12 @@ const postSchema = new Schema({
         required: true,
         unique: true
     },
-    hashtags: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
+    hashtags: [String],
     user: {
         type: String,
         required: true
     },
-    mentions: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
+    mentions: [String],
     content: {
         text: {
             type: String,
@@ -48,46 +34,11 @@ const postSchema = new Schema({
         type: Boolean,
         default: false
     },
-    comments: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    likes: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    reports: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    favorites: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
-    shares: {
-        type: [
-            {
-                type: String
-            }
-        ],
-        default: []
-    },
+    comments: [String],
+    likes: [String],
+    reports: [String],
+    favorites: [String],
+    shares: [String],
     views: {
         type: Number,
         default: 0
@@ -104,12 +55,8 @@ const postSchema = new Schema({
         type: Number,
         required: true
     },
-    updatedAt: {
-        type: Date
-    },
-    updatedTimestamp: {
-        type: Number
-    }
+    updatedAt: Date,
+    updatedTimestamp: Number
 });
 
 postSchema.pre("save", function (next) {

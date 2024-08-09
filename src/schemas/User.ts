@@ -9,7 +9,8 @@ const userSchema = new Schema(
         id: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
+            index: true
         },
         username: {
             type: String,
@@ -21,9 +22,7 @@ const userSchema = new Schema(
             required: true,
             unique: true
         },
-        age: {
-            type: Number
-        },
+        age: Number,
         dateOfBirth: {
             type: Date,
             required: true
@@ -64,6 +63,10 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
+        privateKey: {
+            type: String,
+            required: true
+        },
         createdAt: {
             type: Date,
             required: true
@@ -72,49 +75,17 @@ const userSchema = new Schema(
             type: Number,
             required: true
         },
-        updatedAt: {
-            type: Date
-        },
-        updatedTimestamp: {
-            type: Number
-        },
-        servers: [{ type: String }],
-        friends: {
-            type: [
-                {
-                    type: String
-                }
-            ],
-            default: []
-        },
-        friendRequests: {
-            type: [
-                {
-                    type: String
-                }
-            ],
-            default: []
-        },
-        posts: [{ type: String }],
-        comments: [{ type: String }],
-        blocks: [{ type: String }],
-        blockedBy: [{ type: String }],
-        followers: {
-            type: [
-                {
-                    type: String
-                }
-            ],
-            default: []
-        },
-        following: {
-            type: [
-                {
-                    type: String
-                }
-            ],
-            default: []
-        },
+        updatedAt: Date,
+        updatedTimestamp: Number,
+        servers: [String],
+        friends: [String],
+        friendRequests: [String],
+        posts: [String],
+        comments: [String],
+        blocks: [String],
+        blockedBy: [String],
+        followers: [String],
+        following: [String],
         privacy: {
             favorites: {
                 type: String,
@@ -125,11 +96,15 @@ const userSchema = new Schema(
                 default: "public"
             }
         },
-        reports: [{ type: String }],
-        shares: [{ type: String }],
+        reports: [String],
+        shares: [String],
         views: {
             type: Number,
             default: 0
+        },
+        userRoles: {
+            type: [String],
+            default: ["user"]
         }
     },
     {
@@ -149,7 +124,11 @@ userSchema.pre("save", function (next) {
         activity: {
             lastActive: new Date(),
             lastActiveTimestamp: Date.now()
-        }
+        },
+        nameAcronym: this.username
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
     });
 
     next();

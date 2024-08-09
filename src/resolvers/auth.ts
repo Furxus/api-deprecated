@@ -2,10 +2,12 @@ import UserModel from "../schemas/User";
 import { validateLogin, validateRegister } from "../Validation";
 import bcrypt from "bcrypt";
 import moment from "moment";
+import crypto from "crypto";
 
 import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
 import { Snowflake } from "@theinternetfolks/snowflake";
+import Cryptr from "cryptr";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -131,7 +133,10 @@ export default {
             const salt = bcrypt.genSaltSync(11);
             const hash = bcrypt.hashSync(password, salt);
 
-            const newPass = encrypt(hash);
+            const privateKey = crypto.randomBytes(48).toString("hex");
+            const encrypted = new Cryptr(privateKey).encrypt(hash);
+
+            const newPass = encrypt(encrypted);
 
             const user = new UserModel({
                 id: Snowflake.generate(),
@@ -139,6 +144,7 @@ export default {
                 email,
                 displayName: value.displayName,
                 password: newPass,
+                privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
                 createdTimestamp: Date.now()
@@ -212,7 +218,11 @@ export default {
                     }
                 });
 
-            const pass = bcrypt.compareSync(password, decrypt(user.password));
+            const decrypted = decrypt(user.password);
+            const pass = bcrypt.compareSync(
+                password,
+                new Cryptr(user.privateKey).decrypt(decrypted)
+            );
 
             if (!pass)
                 throw new GraphQLError("Invalid credentials", {
@@ -226,7 +236,7 @@ export default {
                     }
                 });
 
-            const { password: _p, ...rest } = user.toJSON();
+            const { password: _p, privateKey: _pk, ...rest } = user.toJSON();
 
             return {
                 token: encrypt(user.generateToken()),
