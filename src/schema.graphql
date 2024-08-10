@@ -106,6 +106,7 @@ type User {
     age: Int
     dateOfBirth: Date
     avatar: String
+    defaultAvatar: String!
     banner: String
     displayName: String
     activity: Activity!

@@ -8,8 +8,20 @@ import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import Cryptr from "cryptr";
+import asset from "struct/AssetManagement";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+const species = [
+    "dog",
+    "dog",
+    "dragon",
+    "fox",
+    "hyena",
+    "rabbit",
+    "raccoon",
+    "wolf"
+];
 
 export default {
     Mutation: {
@@ -138,12 +150,20 @@ export default {
 
             const newPass = encrypt(encrypted);
 
+            const randomSpecies =
+                species[Math.floor(Math.random() * species.length)];
+
+            const imageUrl = await asset.getObjectPublicUrls(
+                `defaultAvatar/${randomSpecies}.png`
+            );
+
             const user = new UserModel({
                 id: Snowflake.generate(),
                 username,
                 email,
                 displayName: value.displayName,
                 password: newPass,
+                defaultAvatar: imageUrl[0],
                 privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
