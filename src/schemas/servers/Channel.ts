@@ -19,6 +19,10 @@ const channelSchema = new Schema({
         type: String,
         default: null
     },
+    children: {
+        type: [String],
+        default: null
+    },
     type: {
         type: String,
         required: true
@@ -48,6 +52,9 @@ const channelSchema = new Schema({
 });
 
 channelSchema.pre("save", function (next) {
+    if (this.type != "category" && this.children?.length > 0)
+        throw new Error("Non-category channels cannot have children");
+
     this.set({
         updatedAt: new Date(),
         updatedTimestamp: Date.now()

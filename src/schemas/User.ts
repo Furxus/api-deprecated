@@ -63,6 +63,10 @@ const userSchema = new Schema(
             type: String,
             default: null
         },
+        badges: {
+            type: [String],
+            default: []
+        },
         password: {
             type: String,
             required: true

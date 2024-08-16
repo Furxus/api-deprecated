@@ -11,6 +11,7 @@ import MessageSchema from "schemas/servers/Message";
 import CommentSchema from "schemas/posts/Comment";
 import ReportSchema from "schemas/Report";
 import ChannelSchema from "schemas/servers/Channel";
+import channels from "./channels";
 
 export default {
     ...scalarResolvers,
@@ -26,11 +27,11 @@ export default {
                 server: parent.id
             }),
         channels: async (parent: any) =>
-            MemberSchema.find({
+            ChannelSchema.find({
                 server: parent.id
             }),
         roles: async (parent: any) =>
-            MemberSchema.find({
+            RoleSchema.find({
                 server: parent.id
             })
     },
@@ -73,6 +74,10 @@ export default {
         category: async (parent: any) =>
             ChannelSchema.findOne({
                 id: parent.category
+            }),
+        children: async (parent: any) =>
+            ChannelSchema.find({
+                id: { $in: parent.children }
             })
     },
     Message: {
@@ -179,14 +184,17 @@ export default {
     Query: {
         apiStatus: () => true,
         ...servers.Query,
-        ...users.Query
+        ...users.Query,
+        ...channels.Query
     },
     Mutation: {
         ...auth.Mutation,
         ...servers.Mutation,
-        ...users.Mutation
+        ...users.Mutation,
+        ...channels.Mutation
     },
     Subscription: {
-        ...servers.Subscription
+        ...servers.Subscription,
+        ...channels.Subscription
     }
 };

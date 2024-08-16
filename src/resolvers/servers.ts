@@ -31,7 +31,8 @@ type ServerSettings = {
 
 enum ServerEvents {
     ServerCreated = "SERVER_CREATED",
-    ServerJoined = "SERVER_JOINED"
+    ServerJoined = "SERVER_JOINED",
+    ChannelCreated = "CHANNEL_CREATED"
 }
 
 export default {
@@ -69,6 +70,7 @@ export default {
                         ]
                     }
                 });
+
             return server;
         },
         getServerSettings: async (
@@ -193,6 +195,7 @@ export default {
                 name: "Text Channels",
                 server: server.id,
                 type: "category",
+                children: [],
                 createdAt: new Date(),
                 createdTimestamp: Date.now(),
                 position: 0
@@ -208,6 +211,8 @@ export default {
                 createdTimestamp: Date.now(),
                 position: 0
             });
+
+            categoryChannel.children.push(channel.id);
 
             const member = new MemberSchema({
                 id: user.id,
