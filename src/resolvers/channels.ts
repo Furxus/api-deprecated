@@ -233,12 +233,15 @@ export default {
         messageCreated: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ChannelEvents.MessageCreated),
-                async (payload, _, { user }) => {
-                    const server = await ServerSchema.findOne({
-                        id: payload.messageCreated.server
-                    });
+                async (_, { serverId, channelId }, { user }) => {
+                    const server = await ServerSchema.findOne({ id: serverId });
                     if (!server) return false;
+                    const channel = await ChannelSchema.findOne({
+                        id: channelId,
+                        server: serverId
+                    });
 
+                    if (!channel) return false;
                     return server.members.includes(user.id);
                 }
             )

@@ -478,7 +478,7 @@ type Subscription {
     channelCreated: Channel!
 
     # Message Subscriptions
-    messageCreated: Message!
+    messageCreated(serverId: String!, channelId: String!): Message!
     messageUpdated(serverId: String!, channelId: String!): Message!
     messageDeleted(serverId: String!, channelId: String!): Boolean!
 }

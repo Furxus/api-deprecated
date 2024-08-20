@@ -3,13 +3,13 @@ import "winston-daily-rotate-file";
 import { capitalize } from "lodash";
 import moment from "moment";
 
-const { combine, timestamp, printf } = format;
+const { combine, timestamp, printf, errors } = format;
 
 const tsFormat = () => moment().format("YYYY-MM-DD HH:mm:ss A").trim();
 
 const myFormat = printf(
-    ({ level, message, timestamp }) =>
-        `[${timestamp}] ${capitalize(level)}: ${message}`
+    ({ level, message, timestamp, stack }) =>
+        `[${timestamp}] ${capitalize(level)}: ${message}\n${stack || ""}`
 );
 
 const { NODE_ENV } = process.env;
@@ -25,6 +25,7 @@ const logger = createLogger({
     levels: config.syslog.levels,
     level: NODE_ENV === "production" ? "info" : "debug",
     format: combine(
+        errors({ stack: true }),
         timestamp({
             format: tsFormat
         }),
