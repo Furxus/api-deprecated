@@ -32,7 +32,7 @@ type ServerSettings = {
 enum ServerEvents {
     ServerCreated = "SERVER_CREATED",
     ServerJoined = "SERVER_JOINED",
-    ChannelCreated = "CHANNEL_CREATED"
+    ServerLeft = "SERVER_LEFT"
 }
 
 export default {
@@ -366,6 +366,10 @@ export default {
             server.members = server.members.filter((m) => m !== member.id);
             await server.save();
 
+            await pubsub.publish(ServerEvents.ServerLeft, {
+                serverLeft: server.id
+            });
+
             return true;
         }
     },
@@ -380,8 +384,20 @@ export default {
         serverJoined: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerJoined),
-                (payload, _, { user }) =>
-                    payload.serverJoined.members.includes(user.id)
+                async (payload, _, { user }) => {
+                    const member = await MemberSchema.findOne({
+                        server: payload.serverJoined.id,
+                        user: user.id
+                    });
+
+                    return member !== null && member !== undefined;
+                }
+            )
+        },
+        serverLeft: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(ServerEvents.ServerLeft),
+                (payload, _, { user }) => payload.serverLeft === user.id
             )
         }
     }

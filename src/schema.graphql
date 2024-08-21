@@ -473,6 +473,7 @@ type Subscription {
     # Server Subscriptions
     serverCreated: Server!
     serverJoined: Server!
+    serverLeft: String!
 
     # Channel Subscriptions
     channelCreated: Channel!
