@@ -37,26 +37,12 @@ enum ServerEvents {
 
 export default {
     Query: {
-        getUserServers: async (
-            _: any,
-            { id }: { id: string },
-            { user }: { user: any }
-        ) => {
-            let servers = [];
-            if (!id) {
-                servers = await ServerSchema.find({
-                    members: { $in: [user.id] }
-                });
-            } else {
-                servers = await ServerSchema.find({
+        getUserServers: async (_: any, { id }: { id: string }) =>
+            (
+                await ServerSchema.find({
                     members: { $in: [id] }
-                });
-            }
-
-            return servers.sort(
-                (a, b) => b.createdTimestamp - a.createdTimestamp
-            );
-        },
+                })
+            ).sort((a, b) => b.createdTimestamp - a.createdTimestamp),
         getServer: async (_: any, { id }: { id: string }) => {
             const server = await ServerSchema.findOne({ id });
             if (!server)
@@ -95,6 +81,7 @@ export default {
                 server: server.id,
                 user: user.id
             });
+
             if (!member)
                 throw new GraphQLError("You are not a member of this server.", {
                     extensions: {
@@ -367,27 +354,26 @@ export default {
             await server.save();
 
             await pubsub.publish(ServerEvents.ServerLeft, {
-                serverLeft: server.id
+                serverLeft: server
             });
 
-            return true;
+            return server;
         }
     },
     Subscription: {
         serverCreated: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerCreated),
-                (payload, _, { user }) =>
-                    payload.serverCreated.owner === user.id
+                (payload, { userId }) => payload.serverCreated.owner === userId
             )
         },
         serverJoined: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerJoined),
-                async (payload, _, { user }) => {
+                async (payload, { userId }) => {
                     const member = await MemberSchema.findOne({
                         server: payload.serverJoined.id,
-                        user: user.id
+                        user: userId
                     });
 
                     return member !== null && member !== undefined;
@@ -397,7 +383,14 @@ export default {
         serverLeft: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerLeft),
-                (payload, _, { user }) => payload.serverLeft === user.id
+                async (payload, { userId }) => {
+                    const member = await MemberSchema.findOne({
+                        server: payload.serverLeft.id,
+                        user: userId
+                    });
+
+                    return member === null || member === undefined;
+                }
             )
         }
     }

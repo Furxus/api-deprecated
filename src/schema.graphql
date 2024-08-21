@@ -299,8 +299,8 @@ type Mutation {
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
     joinServer(code: String!): Server!
-    leaveServer(id: String!): Boolean!
-    deleteServer(id: String!): Boolean!
+    leaveServer(id: String!): Server!
+    deleteServer(id: String!): Server!
     updateServer(
         id: String!
         propertyNames: [String!]!
@@ -421,7 +421,7 @@ type Query {
     getServer(id: String!): Server!
     getServerSettings(id: String!): ServerSettings!
     getServers: [Server]!
-    getUserServers(id: String): [Server]!
+    getUserServers(id: String!): [Server]!
     checkServerAccess(id: String!): Boolean!
 
     # Channel Queries
@@ -471,9 +471,9 @@ type Query {
 
 type Subscription {
     # Server Subscriptions
-    serverCreated: Server!
-    serverJoined: Server!
-    serverLeft: String!
+    serverCreated(userId: String!): Server!
+    serverJoined(userId: String!): Server!
+    serverLeft(userId: String!): Server!
 
     # Channel Subscriptions
     channelCreated: Channel!
@@ -481,5 +481,5 @@ type Subscription {
     # Message Subscriptions
     messageCreated(serverId: String!, channelId: String!): Message!
     messageUpdated(serverId: String!, channelId: String!): Message!
-    messageDeleted(serverId: String!, channelId: String!): Boolean!
+    messageDeleted(serverId: String!, channelId: String!): Message!
 }
