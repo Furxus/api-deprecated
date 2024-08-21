@@ -48,10 +48,24 @@ export default {
                     }
                 });
 
-            return ChannelSchema.findOne({
+            const channel = await ChannelSchema.findOne({
                 id,
                 server: serverId
             });
+
+            if (!channel)
+                throw new GraphQLError("Channel not found.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "channel",
+                                message: "Channel not found."
+                            }
+                        ]
+                    }
+                });
+
+            return channel;
         },
         getMessages: async (
             _: any,
