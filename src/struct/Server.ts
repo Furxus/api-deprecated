@@ -23,6 +23,8 @@ import RequestLog from "../schemas/RequestLogs";
 import { PubSub } from "graphql-subscriptions";
 import { MongodbPubSub } from "graphql-mongodb-subscriptions";
 import { Db, MongoClient } from "mongodb";
+import { Snowflake } from "@theinternetfolks/snowflake";
+import { threadId } from "worker_threads";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -64,19 +66,22 @@ const serverCleanup = useServer(
         },
         onConnect: async (ctx) => {
             // Check authentication every time a client connects.
-            const auth = ctx.connectionParams?.auth as string | undefined;
-            if (auth) {
-                // You can return false to close the connection  or throw an explicit error
+            const auth = ctx.connectionParams?.token as string | undefined;
+            if (!auth) throw new NotAuthorizedError();
+            const user = Auth.checkToken(auth);
+            if (!user) throw new NotAuthorizedError();
 
-                throw new Error("Auth token missing!");
-            }
+            return { user };
         }
     },
     wsServer
 );
 
+export const genSnowflake = () =>
+    Snowflake.generate({ timestamp: 1731283200, shard_id: threadId });
+
 let pubsub: PubSub | MongodbPubSub = new PubSub();
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV !== "development") {
     pubsub = new MongodbPubSub({
         connectionDb: new Db(
             new MongoClient(process.env.DATABASE ?? ""),

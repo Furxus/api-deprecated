@@ -1,10 +1,9 @@
-import { Snowflake } from "@theinternetfolks/snowflake";
 import MemberSchema from "schemas/servers/Member";
 import ServerSchema from "schemas/servers/Server";
 import asset from "struct/AssetManagement";
 import logger from "struct/Logger";
 import ChannelSchema from "schemas/servers/Channel";
-import { pubsub } from "struct/Server";
+import { genSnowflake, pubsub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
 
@@ -39,9 +38,9 @@ enum ServerEvents {
 export default {
     Query: {
         // Get all the servers the user is in
-        getUserServers: async (_: any, { id }: { id: string }) =>
+        getUserServers: async (_: any, __: any, { user }: { user: any }) =>
             await ServerSchema.find({
-                members: { $in: [id] }
+                members: { $in: [user.id] }
             }),
         // Get a single server by its ID
         getServer: async (_: any, { id }: { id: string }) => {
@@ -121,16 +120,6 @@ export default {
             }
 
             return settings;
-        },
-        // Check if the user has access to the server
-        checkServerAccess: async (
-            _: any,
-            { id }: { id: string },
-            { user }: { user: any }
-        ) => {
-            const server = await ServerSchema.findOne({ id });
-            if (!server) throw new GraphQLError("not-found");
-            return server.members.includes(user.id);
         }
     },
     Mutation: {
@@ -177,7 +166,7 @@ export default {
 
             // Create the server
             const server = new ServerSchema({
-                id: Snowflake.generate(),
+                id: genSnowflake(),
                 name,
                 owner: user.id,
                 createdAt: new Date(),
@@ -186,7 +175,7 @@ export default {
 
             // Create the category channel (currently not implemented)
             const categoryChannel = new ChannelSchema({
-                id: Snowflake.generate(),
+                id: genSnowflake(),
                 name: "Text Channels",
                 server: server.id,
                 type: "category",
@@ -198,7 +187,7 @@ export default {
 
             // Create the general channel
             const channel = new ChannelSchema({
-                id: Snowflake.generate(),
+                id: genSnowflake(),
                 name: "General",
                 server: server.id,
                 category: categoryChannel.id,
@@ -230,7 +219,6 @@ export default {
 
             // Push the member, channel, and category channel to the server
             server.members.push(member.id);
-            server.channels.push(channel.id);
             server.channels.push(categoryChannel.id);
 
             // Upload the icon if it exists
@@ -240,12 +228,12 @@ export default {
                 if (iconFile.mimetype.includes("gif")) {
                     iconFile = await asset.uploadStream(
                         stream,
-                        `servers/${server.id}/a_${Snowflake.generate()}.gif`
+                        `servers/${server.id}/a_${genSnowflake()}.gif`
                     );
                 } else {
                     iconUrl = await asset.uploadStream(
                         stream,
-                        `servers/${server.id}/${Snowflake.generate()}.png`
+                        `servers/${server.id}/${genSnowflake()}.png`
                     );
                 }
 
@@ -424,13 +412,15 @@ export default {
                 );
             }
 
-            // Delete the server
-            await ServerSchema.deleteOne({ id });
-
-            // Send the server deletion to the websocket
+            // Send the server deletion to the websocket before deleting it, so the client can update
             await pubsub.publish(ServerEvents.ServerDeleted, {
                 serverDeleted: server
             });
+
+            // Delete the server
+            await ServerSchema.deleteOne({ id });
+            await ChannelSchema.deleteMany({ server: id });
+            await MemberSchema.deleteMany({ server: id });
 
             return server;
         }

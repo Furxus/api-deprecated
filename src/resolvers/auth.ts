@@ -6,9 +6,9 @@ import crypto from "crypto";
 
 import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
-import { Snowflake } from "@theinternetfolks/snowflake";
 import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
+import { genSnowflake } from "struct/Server";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -171,7 +171,7 @@ export default {
 
             // Create user (since the app is in alpha phase, we give them a special role)
             const user = new UserModel({
-                id: Snowflake.generate(),
+                id: genSnowflake(),
                 username,
                 email,
                 displayName: value.displayName,

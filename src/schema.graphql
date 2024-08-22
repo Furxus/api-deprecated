@@ -431,12 +431,11 @@ type Query {
     getServer(id: String!): Server!
     getServerSettings(id: String!): ServerSettings!
     getServers: [Server]!
-    getUserServers(id: String!): [Server]!
-    checkServerAccess(id: String!): Boolean!
+    getUserServers: [Server]!
 
     # Channel Queries
     getChannel(serverId: String!, id: String!): Channel!
-    getChannels(serverId: String!): [Channel]!
+    getChannels(serverId: String!, type: [String]): [Channel]!
 
     # Message Queries
     getMessage(serverId: String!, channelId: String!, id: String!): Message!

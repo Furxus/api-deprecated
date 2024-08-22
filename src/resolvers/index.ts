@@ -12,6 +12,7 @@ import CommentSchema from "schemas/posts/Comment";
 import ReportSchema from "schemas/Report";
 import ChannelSchema from "schemas/servers/Channel";
 import channels from "./channels";
+import messages from "./messages";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
@@ -186,16 +187,19 @@ export default {
         apiStatus: () => true,
         ...servers.Query,
         ...users.Query,
-        ...channels.Query
+        ...channels.Query,
+        ...messages.Query
     },
     Mutation: {
         ...auth.Mutation,
         ...servers.Mutation,
         ...users.Mutation,
-        ...channels.Mutation
+        ...channels.Mutation,
+        ...messages.Mutation
     },
     Subscription: {
         ...servers.Subscription,
-        ...channels.Subscription
+        ...channels.Subscription,
+        ...messages.Subscription
     }
 };
