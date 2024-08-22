@@ -318,7 +318,7 @@ type Mutation {
 
     # Channel Mutations
     createChannel(serverId: String!, name: String!, type: String!): Channel!
-    deleteChannel(serverId: String!, id: String!): Boolean!
+    deleteChannel(serverId: String!, id: String!): Channel!
     updateChannel(
         serverId: String!
         id: String!
@@ -487,7 +487,8 @@ type Subscription {
     serverDeleted(userId: String!): Server!
 
     # Channel Subscriptions
-    channelCreated: Channel!
+    channelCreated(serverId: String!): Channel!
+    channelDeleted(serverId: String!): Channel!
 
     # Message Subscriptions
     messageCreated(serverId: String!, channelId: String!): Message!
