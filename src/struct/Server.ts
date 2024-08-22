@@ -21,6 +21,8 @@ import Auth from "./Auth";
 import { NotAuthorizedError } from "./Errors";
 import RequestLog from "../schemas/RequestLogs";
 import { PubSub } from "graphql-subscriptions";
+import { MongodbPubSub } from "graphql-mongodb-subscriptions";
+import { Db, MongoClient } from "mongodb";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -73,7 +75,17 @@ const serverCleanup = useServer(
     wsServer
 );
 
-export const pubsub = new PubSub();
+let pubsub: PubSub | MongodbPubSub = new PubSub();
+if (process.env.NODE_ENV === "development") {
+    pubsub = new MongodbPubSub({
+        connectionDb: new Db(
+            new MongoClient(process.env.DATABASE ?? ""),
+            "furxus"
+        )
+    });
+}
+
+export { pubsub };
 
 export default class Server extends ApolloServer {
     readonly database: Database;

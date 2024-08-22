@@ -129,7 +129,7 @@ export default {
             { user }: { user: any }
         ) => {
             const server = await ServerSchema.findOne({ id });
-            if (!server) return false;
+            if (!server) throw new GraphQLError("not-found");
             return server.members.includes(user.id);
         }
     },
