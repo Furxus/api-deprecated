@@ -1,5 +1,6 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
+// For now we do not even use this, I am planning to rework it and make it better for sure
 const config: CodegenConfig = {
     schema: "src/schema.graphql",
     generates: {

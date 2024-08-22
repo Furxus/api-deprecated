@@ -112,6 +112,7 @@ export default class Server extends ApolloServer {
             express.json(),
             expressMiddleware(this, {
                 context: async ({ req }) => {
+                    // IP Logging and User Agent Logging (for security purposes and banning if needed, we don't store any personal data and will never use this maliciously)
                     let ip =
                         req.headers["x-forwarded-for"] ||
                         req.socket.remoteAddress;

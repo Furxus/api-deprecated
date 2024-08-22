@@ -1,3 +1,6 @@
+"""
+All scalar types are from the graphql-scalars package
+"""
 scalar Date
 scalar Time
 scalar DateTime
@@ -69,6 +72,9 @@ scalar Any
 
 scalar Upload
 
+"""
+Directive for inheriting fields from another type
+"""
 directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
 
 input RegisterInput {
@@ -99,6 +105,9 @@ input PostContentInput {
     audio: Upload
 }
 
+"""
+User type contains all data related to a user (some not implemented yet)
+"""
 type User {
     id: String!
     username: String!
@@ -411,6 +420,7 @@ type Mutation {
 }
 
 type Query {
+    # For checking if the API is online
     apiStatus: Boolean
 
     # User Queries

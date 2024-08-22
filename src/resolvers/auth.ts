@@ -26,6 +26,7 @@ const species = [
 export default {
     Mutation: {
         registerUser: async (_: any, { input }: { input: RegisterInput }) => {
+            // Grab inputs from the request
             const inputEmail = input.email.toLowerCase();
             const inputUsername = input.username.toLowerCase();
             const dateOfBirth = moment(new Date(input.dateOfBirth));
@@ -43,6 +44,7 @@ export default {
                     }
                 });
 
+            // Validate the inputs
             const errors = [];
 
             if (emailRegex.test(inputUsername))
@@ -74,6 +76,7 @@ export default {
                     }
                 });
 
+            // Grab validated values
             const { username, email, password, confirmPassword } = value;
 
             if (username === email)
@@ -97,6 +100,7 @@ export default {
                     }
                 );
 
+            // Check if the user exists already
             const userExists = await UserModel.findOne({
                 $or: [{ username }, { email }]
             });
@@ -142,21 +146,25 @@ export default {
                     }
                 });
 
+            // Generate salt for the user;s password
             const salt = bcrypt.genSaltSync(11);
+            // Hash the password
             const hash = bcrypt.hashSync(password, salt);
 
-            const privateKey = crypto.randomBytes(48).toString("hex");
+            // Create a random generated private key for the user.
+            const privateKey = crypto.randomBytes(256).toString("base64");
+            // Double encrypt it (Not telling you the second one hehe)
             const encrypted = new Cryptr(privateKey).encrypt(hash);
-
             const newPass = encrypt(encrypted);
 
+            // Choose a random default avatar for the user
             const randomSpecies =
                 species[Math.floor(Math.random() * species.length)];
-
             const imageUrl = await asset.getObjectPublicUrls(
                 `defaultAvatar/${randomSpecies}.png`
             );
 
+            // Create user (since the app is in alpha phase, we give them a special role)
             const user = new UserModel({
                 id: Snowflake.generate(),
                 username,
@@ -167,7 +175,8 @@ export default {
                 privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
-                createdTimestamp: Date.now()
+                createdTimestamp: Date.now(),
+                userRoles: ["alpha-user"]
             });
 
             await user.save();
@@ -175,8 +184,10 @@ export default {
             return true;
         },
         loginUser: async (_: any, { input }: { input: LoginInput }) => {
+            // Receive inputs from the request
             const usernameOrEmail = input.usernameOrEmail.toLowerCase();
 
+            // Validate the inputs
             const validate: {
                 password: string;
                 email?: string;
@@ -203,11 +214,12 @@ export default {
                     }
                 });
 
-            const user = await UserModel.findOne({
+            // Find the user in the database
+            const userCreds = await UserModel.findOne({
                 $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
-            });
+            }).select("+password +privateKey");
 
-            if (!user)
+            if (!userCreds)
                 throw new GraphQLError("Invalid credentials", {
                     extensions: {
                         errors: [
@@ -219,6 +231,7 @@ export default {
                     }
                 });
 
+            // revalidate the password
             const {
                 error: passwordError,
                 value: { password }
@@ -238,10 +251,12 @@ export default {
                     }
                 });
 
-            const decrypted = decrypt(user.password);
+            // Decrypt the password
+            const decrypted = decrypt(userCreds.password);
+            // Compare hashes
             const pass = bcrypt.compareSync(
                 password,
-                new Cryptr(user.privateKey).decrypt(decrypted)
+                new Cryptr(userCreds.privateKey).decrypt(decrypted)
             );
 
             if (!pass)
@@ -256,11 +271,26 @@ export default {
                     }
                 });
 
-            const { password: _p, privateKey: _pk, ...rest } = user.toJSON();
+            // Refetch the user from the database without the password and private key
+            const user = await UserModel.findOne({
+                $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
+            }).select("-password -privateKey");
+
+            if (!user)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "usernameOrEmail",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
 
             return {
                 token: encrypt(user.generateToken()),
-                ...rest
+                ...user
             };
         }
     }

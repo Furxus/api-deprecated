@@ -10,6 +10,7 @@ const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error("No JWT secret provided");
 
 export default class Auth {
+    // Checking JWT token with decrypting it
     static checkToken(token: string) {
         try {
             // verify token

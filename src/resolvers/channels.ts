@@ -6,13 +6,9 @@ import { GraphQLError } from "graphql";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import MessageSchema from "schemas/servers/Message";
 
-enum ChannelEvents {
-    ChannelCreated = "CHANNEL_CREATED",
-    MessageCreated = "MESSAGE_CREATED"
-}
-
 export default {
     Query: {
+        // Get all the channels from a server
         getChannels: async (_: any, { serverId }: { serverId: string }) => {
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
@@ -31,6 +27,7 @@ export default {
                 server: serverId
             });
         },
+        // Get a single channel from a server by its ID
         getChannel: async (
             _: any,
             { serverId, id }: { serverId: string; id: string }
@@ -67,6 +64,7 @@ export default {
 
             return channel;
         },
+        // Get all messages from a channel
         getMessages: async (
             _: any,
             { serverId, channelId }: { serverId: string; channelId: string }
@@ -108,7 +106,9 @@ export default {
         }
     },
     Mutation: {
+        // Create a channel in a server
         createChannel: async (_: any, { serverId, name, type }: any) => {
+            // Check if the server exists
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -122,18 +122,20 @@ export default {
                     }
                 });
 
-            const allChannels = (
+            // Determine channel position
+            const position = (
                 await ChannelSchema.find({
                     server: server.id
                 })
-            ).filter((channel) => channel.type !== "category");
+            ).filter((channel) => channel.type !== "category").length;
 
+            // Create the channel
             const channel = new ChannelSchema({
                 id: Snowflake.generate(),
                 name,
                 server: server.id,
                 type,
-                position: allChannels.length,
+                position,
                 createdAt: new Date(),
                 createdTimestamp: Date.now()
             });
@@ -144,12 +146,14 @@ export default {
 
             await server.save();
 
+            // Send the channel creation to the websocket
             await pubsub.publish(ChannelEvents.ChannelCreated, {
                 channelCreated: channel
             });
 
             return channel;
         },
+        // Create a message in a channel
         createMessage: async (
             _: any,
             {
@@ -163,6 +167,7 @@ export default {
             },
             { user }: { user: any }
         ) => {
+            // Check if the message is valid
             if (content.length < 1 || content.length > 2000)
                 throw new GraphQLError(
                     "Message must be between 1 and 2000 characters.",
@@ -179,6 +184,7 @@ export default {
                     }
                 );
 
+            // Check if the server exists
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -192,6 +198,7 @@ export default {
                     }
                 });
 
+            // Check if the channel exists
             const channel = await ChannelSchema.findOne({
                 id: channelId,
                 server: serverId
@@ -209,6 +216,7 @@ export default {
                     }
                 });
 
+            // Create the message
             const message = new MessageSchema({
                 id: Snowflake.generate(),
                 server: server.id,
@@ -223,6 +231,7 @@ export default {
 
             await message.save();
 
+            // Send the message to the websocket
             await pubsub.publish(ChannelEvents.MessageCreated, {
                 messageCreated: message
             });
@@ -232,6 +241,7 @@ export default {
     },
     Subscription: {
         channelCreated: {
+            // Subscribe to channel creation events
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ChannelEvents.ChannelCreated),
                 async (payload, _, { user }) => {
@@ -245,6 +255,7 @@ export default {
             )
         },
         messageCreated: {
+            // Subscribe to message creation events
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ChannelEvents.MessageCreated),
                 async (_, { serverId, channelId }, { user }) => {

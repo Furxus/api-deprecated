@@ -8,41 +8,14 @@ import { pubsub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
 
-type CreateServerInput = {
-    name: string;
-    icon: any;
-};
-
-type ServerSettings = {
-    roles: string[] | null;
-    channels: string[] | null;
-    invites:
-        | {
-              code: string;
-              uses: number;
-              maxUses: number;
-              expiresAt: Date | null;
-              expiresTimestamp: number | null;
-              createdAt: Date;
-              createdTimestamp: number;
-          }[]
-        | null;
-};
-
-enum ServerEvents {
-    ServerCreated = "SERVER_CREATED",
-    ServerJoined = "SERVER_JOINED",
-    ServerLeft = "SERVER_LEFT"
-}
-
 export default {
     Query: {
+        // Get all the servers the user is in
         getUserServers: async (_: any, { id }: { id: string }) =>
-            (
-                await ServerSchema.find({
-                    members: { $in: [id] }
-                })
-            ).sort((a, b) => b.createdTimestamp - a.createdTimestamp),
+            await ServerSchema.find({
+                members: { $in: [id] }
+            }),
+        // Get a single server by its ID
         getServer: async (_: any, { id }: { id: string }) => {
             const server = await ServerSchema.findOne({ id });
             if (!server)
@@ -59,11 +32,13 @@ export default {
 
             return server;
         },
+        // Get the settings of a server
         getServerSettings: async (
             _: any,
             { id }: { id: string },
             { user }: { user: any }
         ) => {
+            // Find the servers
             const server = await ServerSchema.findOne({ id });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -77,6 +52,7 @@ export default {
                     }
                 });
 
+            // Find the member
             const member = await MemberSchema.findOne({
                 server: server.id,
                 user: user.id
@@ -102,6 +78,7 @@ export default {
                 invites: null
             };
 
+            // Check user's appropriate permissions
             if (!permissions.includes("Administrator")) {
                 if (permissions.includes("ManageRoles"))
                     settings.roles = server.roles;
@@ -117,6 +94,7 @@ export default {
 
             return settings;
         },
+        // Check if the user has access to the server
         checkServerAccess: async (
             _: any,
             { id }: { id: string },
@@ -145,8 +123,8 @@ export default {
                     }
                 });
 
+            // Check if the user uploaded an icon
             let iconFile = null;
-
             try {
                 if (icon) {
                     iconFile = await icon;
@@ -169,6 +147,7 @@ export default {
                 );
             }
 
+            // Create the server
             const server = new ServerSchema({
                 id: Snowflake.generate(),
                 name,
@@ -177,6 +156,7 @@ export default {
                 createdTimestamp: Date.now()
             });
 
+            // Create the category channel (currently not implemented)
             const categoryChannel = new ChannelSchema({
                 id: Snowflake.generate(),
                 name: "Text Channels",
@@ -188,9 +168,10 @@ export default {
                 position: 0
             });
 
+            // Create the general channel
             const channel = new ChannelSchema({
                 id: Snowflake.generate(),
-                name: "general",
+                name: "General",
                 server: server.id,
                 category: categoryChannel.id,
                 type: "text",
@@ -199,8 +180,10 @@ export default {
                 position: 0
             });
 
+            // Add the general channel to the category channel
             categoryChannel.children.push(channel.id);
 
+            // Create the member (owner)
             const member = new MemberSchema({
                 id: user.id,
                 user: user.id,
@@ -210,16 +193,19 @@ export default {
                 joinedTimestamp: Date.now()
             });
 
+            // Generate an invite code for the server
             server.generateInviteLink(server.id, member.id);
 
             await member.save();
             await channel.save();
             await categoryChannel.save();
 
+            // Push the member, channel, and category channel to the server
             server.members.push(member.id);
             server.channels.push(channel.id);
             server.channels.push(categoryChannel.id);
 
+            // Upload the icon if it exists
             if (iconFile) {
                 const stream = iconFile.createReadStream();
                 let iconUrl;
@@ -240,6 +226,7 @@ export default {
 
             await server.save();
 
+            // Send the server creation to the websocket
             await pubsub.publish(ServerEvents.ServerCreated, {
                 serverCreated: server
             });
@@ -251,6 +238,7 @@ export default {
             { code }: { code: string },
             { user }: { user: any }
         ) => {
+            // Verify the code
             const server = await ServerSchema.findOne({
                 invites: { $elemMatch: { code } }
             });
@@ -282,6 +270,7 @@ export default {
                     }
                 );
 
+            // Create the member
             const member = new MemberSchema({
                 id: user.id,
                 user: user.id,
@@ -295,6 +284,7 @@ export default {
             server.members.push(member.id);
             await server.save();
 
+            // Send the server join to the websocket
             await pubsub.publish(ServerEvents.ServerJoined, {
                 serverJoined: server
             });
@@ -306,6 +296,7 @@ export default {
             { id }: { id: string },
             { user }: { user: any }
         ) => {
+            // `
             const server = await ServerSchema.findOne({ id });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -319,6 +310,7 @@ export default {
                     }
                 });
 
+            // Owner cannot leave the server (they can delete it or have to transfer ownership)
             if (server.owner === user.id)
                 throw new GraphQLError("You cannot leave your own server.", {
                     extensions: {
@@ -331,6 +323,7 @@ export default {
                     }
                 });
 
+            // Check if the user is a member of the server
             const member = await MemberSchema.findOne({
                 user: user.id,
                 server: server.id
@@ -348,11 +341,14 @@ export default {
                     }
                 });
 
+            // Delete the member from the database
             await MemberSchema.deleteOne({ user: user.id, server: server.id });
 
+            // Filter it out of the server's members
             server.members = server.members.filter((m) => m !== member.id);
             await server.save();
 
+            // Send the server leave to the websocket
             await pubsub.publish(ServerEvents.ServerLeft, {
                 serverLeft: server
             });
@@ -362,12 +358,14 @@ export default {
     },
     Subscription: {
         serverCreated: {
+            // Only the owner of the server can see the server creation
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerCreated),
                 (payload, { userId }) => payload.serverCreated.owner === userId
             )
         },
         serverJoined: {
+            // Only the member that joined can see the server they joined
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerJoined),
                 async (payload, { userId }) => {
@@ -381,6 +379,7 @@ export default {
             )
         },
         serverLeft: {
+            // Only the member that left can see the server they left
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerLeft),
                 async (payload, { userId }) => {

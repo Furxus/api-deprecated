@@ -13,6 +13,7 @@ import ReportSchema from "schemas/Report";
 import ChannelSchema from "schemas/servers/Channel";
 import channels from "./channels";
 
+// All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
     ...scalarResolvers,
     Upload: GraphQLUpload,
