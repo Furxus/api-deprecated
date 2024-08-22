@@ -13,7 +13,7 @@ type CreateServerInput = {
     icon: any;
 };
 
-type ServerSettings = {
+export type ServerSettings = {
     roles: string[] | null;
     channels: string[] | null;
     invites:
@@ -31,6 +31,7 @@ type ServerSettings = {
 
 enum ServerEvents {
     ServerCreated = "SERVER_CREATED",
+    ServerDeleted = "SERVER_DELETED",
     ServerJoined = "SERVER_JOINED",
     ServerLeft = "SERVER_LEFT"
 }
@@ -323,7 +324,7 @@ export default {
             { id }: { id: string },
             { user }: { user: any }
         ) => {
-            // `
+            // Find the server
             const server = await ServerSchema.findOne({ id });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -381,6 +382,57 @@ export default {
             });
 
             return server;
+        },
+        deleteServer: async (
+            _: any,
+            { id }: { id: string },
+            { user }: { user: any }
+        ) => {
+            // Find the server
+            const server = await ServerSchema.findOne({
+                id
+            });
+
+            if (!server) {
+                throw new GraphQLError("Server not found.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "server",
+                                message: "Server not found."
+                            }
+                        ]
+                    }
+                });
+            }
+
+            // Check if the user is the owner
+            if (server.owner !== user.id) {
+                throw new GraphQLError(
+                    "You are not the owner of this server.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "server",
+                                    message:
+                                        "You are not the owner of this server."
+                                }
+                            ]
+                        }
+                    }
+                );
+            }
+
+            // Delete the server
+            await ServerSchema.deleteOne({ id });
+
+            // Send the server deletion to the websocket
+            await pubsub.publish(ServerEvents.ServerDeleted, {
+                serverDeleted: server
+            });
+
+            return server;
         }
     },
     Subscription: {
@@ -417,6 +469,13 @@ export default {
 
                     return member === null || member === undefined;
                 }
+            )
+        },
+        serverDeleted: {
+            // Only the owner of the server can see the server deletion
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(ServerEvents.ServerDeleted),
+                (payload, { userId }) => payload.serverDeleted.owner === userId
             )
         }
     }

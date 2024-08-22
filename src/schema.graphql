@@ -484,6 +484,7 @@ type Subscription {
     serverCreated(userId: String!): Server!
     serverJoined(userId: String!): Server!
     serverLeft(userId: String!): Server!
+    serverDeleted(userId: String!): Server!
 
     # Channel Subscriptions
     channelCreated: Channel!

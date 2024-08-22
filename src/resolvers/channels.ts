@@ -8,6 +8,7 @@ import MessageSchema from "schemas/servers/Message";
 
 enum ChannelEvents {
     ChannelCreated = "CHANNEL_CREATED",
+    ChannelDeleted = "CHANNEL_DELETED",
     MessageCreated = "MESSAGE_CREATED"
 }
 
