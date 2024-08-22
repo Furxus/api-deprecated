@@ -1,2 +1,5 @@
-// TODO: Implement server deletion by owners
-// TODO: Add more TODOs
+# TODO:
+
+**Implement server deletion by owners**
+
+**Add more todos lol**
