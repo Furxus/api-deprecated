@@ -12,16 +12,21 @@ import asset from "struct/AssetManagement";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-const species = [
-    "dog",
-    "dog",
-    "dragon",
-    "fox",
-    "hyena",
-    "rabbit",
-    "raccoon",
-    "wolf"
-];
+const species = ["dog", "dragon", "fox", "hyena", "rabbit", "raccoon", "wolf"];
+
+type RegisterInput = {
+    username: string;
+    email: string;
+    displayName: string;
+    password: string;
+    confirmPassword: string;
+    dateOfBirth: string;
+};
+
+type LoginInput = {
+    usernameOrEmail: string;
+    password: string;
+};
 
 export default {
     Mutation: {

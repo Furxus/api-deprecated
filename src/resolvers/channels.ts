@@ -6,6 +6,11 @@ import { GraphQLError } from "graphql";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import MessageSchema from "schemas/servers/Message";
 
+enum ChannelEvents {
+    ChannelCreated = "CHANNEL_CREATED",
+    MessageCreated = "MESSAGE_CREATED"
+}
+
 export default {
     Query: {
         // Get all the channels from a server

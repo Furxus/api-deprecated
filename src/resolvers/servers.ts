@@ -8,6 +8,33 @@ import { pubsub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
 
+type CreateServerInput = {
+    name: string;
+    icon: any;
+};
+
+type ServerSettings = {
+    roles: string[] | null;
+    channels: string[] | null;
+    invites:
+        | {
+              code: string;
+              uses: number;
+              maxUses: number;
+              expiresAt: Date | null;
+              expiresTimestamp: number | null;
+              createdAt: Date;
+              createdTimestamp: number;
+          }[]
+        | null;
+};
+
+enum ServerEvents {
+    ServerCreated = "SERVER_CREATED",
+    ServerJoined = "SERVER_JOINED",
+    ServerLeft = "SERVER_LEFT"
+}
+
 export default {
     Query: {
         // Get all the servers the user is in
