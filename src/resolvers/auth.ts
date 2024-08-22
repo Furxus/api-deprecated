@@ -290,7 +290,7 @@ export default {
 
             return {
                 token: encrypt(user.generateToken()),
-                ...user
+                ...user.toJSON()
             };
         }
     }
