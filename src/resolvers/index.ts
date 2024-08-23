@@ -1,102 +1,24 @@
 import { resolvers as scalarResolvers } from "graphql-scalars";
 import { GraphQLUpload } from "graphql-upload-ts";
-import users from "./users";
-import servers from "./servers";
+import users from "./servers/users";
+import servers from "./servers/servers";
 import auth from "./auth";
-import MemberSchema from "schemas/servers/Member";
 import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
-import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
 import CommentSchema from "schemas/posts/Comment";
-import ReportSchema from "schemas/Report";
-import ChannelSchema from "schemas/servers/Channel";
-import channels from "./channels";
-import messages from "./messages";
+import channels from "./servers/channels";
+import messages from "./servers/messages";
+
+import serverScalars from "./servers/scalars";
+import postScalars from "./posts/scalars";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
     ...scalarResolvers,
+    ...serverScalars,
+    ...postScalars,
     Upload: GraphQLUpload,
-    Server: {
-        owner: async (parent: any) =>
-            MemberSchema.findOne({
-                server: parent.id,
-                user: parent.owner
-            }),
-        members: async (parent: any) =>
-            MemberSchema.find({
-                server: parent.id
-            }),
-        channels: async (parent: any) =>
-            ChannelSchema.find({
-                server: parent.id
-            }),
-        roles: async (parent: any) =>
-            RoleSchema.find({
-                server: parent.id
-            })
-    },
-    Invite: {
-        createdBy: async (parent: any) =>
-            UserSchema.findOne({
-                id: parent.createdBy
-            })
-    },
-    Member: {
-        user: async (parent: any) =>
-            UserSchema.findOne({
-                id: parent.user
-            }),
-        server: async (parent: any) =>
-            ServerSchema.findOne({
-                id: parent.server
-            }),
-        roles: async (parent: any) =>
-            RoleSchema.find({
-                server: parent.server
-            })
-    },
-    Role: {
-        server: async (parent: any) =>
-            ServerSchema.findOne({
-                id: parent.server
-            })
-    },
-    Channel: {
-        server: async (parent: any) =>
-            ServerSchema.findOne({
-                id: parent.server
-            }),
-        messages: async (parent: any) =>
-            MessageSchema.find({
-                server: parent.server,
-                channel: parent.id
-            }),
-        category: async (parent: any) =>
-            ChannelSchema.findOne({
-                id: parent.category
-            }),
-        children: async (parent: any) =>
-            ChannelSchema.find({
-                id: { $in: parent.children }
-            })
-    },
-    Message: {
-        member: async (parent: any) =>
-            MemberSchema.findOne({
-                server: parent.server,
-                user: parent.member
-            }),
-        server: async (parent: any) =>
-            ServerSchema.findOne({
-                id: parent.server
-            }),
-        channel: async (parent: any) =>
-            ServerSchema.findOne({
-                id: parent.channel
-            })
-    },
     Report: {
         post: async (parent: any) =>
             MessageSchema.findOne({
@@ -151,36 +73,6 @@ export default {
         following: async (parent: any) =>
             UserSchema.find({
                 id: { $in: parent.following }
-            })
-    },
-    Post: {
-        user: async (parent: any) =>
-            UserSchema.findOne({
-                id: parent.user
-            }),
-        mentions: async (parent: any) =>
-            UserSchema.find({
-                id: { $in: parent.mentions }
-            }),
-        comments: async (parent: any) =>
-            CommentSchema.find({
-                id: { $in: parent.comments }
-            }),
-        likes: async (parent: any) =>
-            UserSchema.find({
-                id: { $in: parent.likes }
-            }),
-        reports: async (parent: any) =>
-            ReportSchema.find({
-                id: { $in: parent.reports }
-            }),
-        favorites: async (parent: any) =>
-            UserSchema.find({
-                id: { $in: parent.favorites }
-            }),
-        shares: async (parent: any) =>
-            UserSchema.find({
-                id: { $in: parent.shares }
             })
     },
     Query: {
