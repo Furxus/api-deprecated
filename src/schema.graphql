@@ -122,6 +122,7 @@ type User {
     bio: String
     createdAt: DateTime!
     createdTimestamp: Timestamp!
+    preferences: Preferences!
     updatedAt: DateTime!
     updatedTimestamp: Timestamp!
     servers: [Server]!
@@ -138,6 +139,11 @@ type User {
     reports: [Report]!
     shares: [Post]!
     views: Int!
+}
+
+type Preferences {
+    mode: String!
+    theme: String!
 }
 
 type Favorites {
@@ -304,6 +310,7 @@ type Auth @inherits(type: "User") {
 type Mutation {
     registerUser(input: RegisterInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
+    refreshUser(token: String!): Auth!
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!

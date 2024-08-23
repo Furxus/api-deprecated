@@ -83,6 +83,16 @@ const userSchema = new Schema(
             type: Number,
             required: true
         },
+        preferences: {
+            mode: {
+                type: String,
+                default: "servers"
+            },
+            theme: {
+                type: String,
+                default: "dark"
+            }
+        },
         updatedAt: Date,
         updatedTimestamp: Number,
         servers: [String],

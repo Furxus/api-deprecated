@@ -9,6 +9,7 @@ import { GraphQLError } from "graphql";
 import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
 import { genSnowflake } from "struct/Server";
+import Auth from "struct/Auth";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -288,6 +289,42 @@ export default {
                             {
                                 type: "usernameOrEmail",
                                 message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            return {
+                token: encrypt(user.generateToken()),
+                ...user.toJSON()
+            };
+        },
+        refreshUser: async (_: any, { token }: { token: string }) => {
+            // Decrypt the tokena
+            const oldUser = Auth.checkToken(token) as any;
+            if (!oldUser)
+                throw new GraphQLError("Invalid token", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "token",
+                                message: "Invalid token"
+                            }
+                        ]
+                    }
+                });
+
+            const user = await UserModel.findOne({
+                id: oldUser.id
+            }).select("-password -privateKey");
+
+            if (!user)
+                throw new GraphQLError("Invalid Token", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "token",
+                                message: "Invalid Token"
                             }
                         ]
                     }

@@ -56,19 +56,22 @@ const schema = inheritDirective(
 const serverCleanup = useServer(
     {
         schema,
-        context: async (ctx) => {
-            const auth = ctx.connectionParams?.token as string | undefined;
-            if (!auth) throw new NotAuthorizedError();
-            const user = Auth.checkToken(auth);
+        context: async ({ connectionParams: params }) => {
+            if (!params) throw new NotAuthorizedError();
+            const header = params.Authorization as any;
+            if (!header) throw new NotAuthorizedError();
+            const token = header.split(" ")[1];
+            const user = Auth.checkToken(token);
             if (!user) throw new NotAuthorizedError();
 
             return { user };
         },
-        onConnect: async (ctx) => {
-            // Check authentication every time a client connects.
-            const auth = ctx.connectionParams?.token as string | undefined;
-            if (!auth) throw new NotAuthorizedError();
-            const user = Auth.checkToken(auth);
+        onConnect: async ({ connectionParams: params }) => {
+            if (!params) throw new NotAuthorizedError();
+            const header = params.Authorization as any;
+            if (!header) throw new NotAuthorizedError();
+            const token = header.split(" ")[1];
+            const user = Auth.checkToken(token);
             if (!user) throw new NotAuthorizedError();
 
             return { user };

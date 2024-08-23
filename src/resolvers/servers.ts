@@ -41,7 +41,7 @@ export default {
         getUserServers: async (_: any, __: any, { user }: { user: any }) =>
             await ServerSchema.find({
                 members: { $in: [user.id] }
-            }),
+            }).sort({ createdAt: -1 }),
         // Get a single server by its ID
         getServer: async (_: any, { id }: { id: string }) => {
             const server = await ServerSchema.findOne({ id });
