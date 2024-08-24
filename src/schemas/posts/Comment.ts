@@ -19,6 +19,8 @@ const commentSchema = new Schema({
         required: true
     },
     mentions: [String],
+    likes: [String],
+    reports: [String],
     createdAt: {
         type: Date,
         required: true

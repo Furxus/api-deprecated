@@ -14,6 +14,14 @@ const serverSchema = new Schema(
         nameAcronym: {
             type: String
         },
+        icon: {
+            type: String,
+            default: null
+        },
+        description: {
+            type: String,
+            default: null
+        },
         owner: {
             type: String,
             required: true
@@ -66,15 +74,7 @@ const serverSchema = new Schema(
             required: true
         },
         updatedAt: Date,
-        updatedTimestamp: Number,
-        icon: {
-            type: String,
-            default: null
-        },
-        description: {
-            type: String,
-            default: null
-        }
+        updatedTimestamp: Number
     },
     {
         methods: {
