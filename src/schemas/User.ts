@@ -33,13 +33,17 @@ const userSchema = new Schema(
         },
         defaultAvatar: {
             type: String,
-            default: null
+            required: true
         },
         banner: {
             type: String,
             default: null
         },
         displayName: {
+            type: String,
+            default: null
+        },
+        nameAcronym: {
             type: String,
             default: null
         },
@@ -83,6 +87,35 @@ const userSchema = new Schema(
             type: Number,
             required: true
         },
+        updatedAt: Date,
+        updatedTimestamp: Number,
+        servers: [String],
+        posts: [String],
+        comments: [String],
+        followers: [String],
+        following: [String],
+        friends: [String],
+        friendRequests: [String],
+        blocks: [String],
+        blockedBy: [String],
+        privacy: {
+            visiblity: {
+                type: String,
+                default: "public"
+            },
+            posts: {
+                type: String,
+                default: "public"
+            },
+            favorites: {
+                type: String,
+                default: "public"
+            },
+            likes: {
+                type: String,
+                default: "public"
+            }
+        },
         preferences: {
             mode: {
                 type: String,
@@ -93,36 +126,17 @@ const userSchema = new Schema(
                 default: "dark"
             }
         },
-        updatedAt: Date,
-        updatedTimestamp: Number,
-        servers: [String],
-        friends: [String],
-        friendRequests: [String],
-        posts: [String],
-        comments: [String],
-        blocks: [String],
-        blockedBy: [String],
-        followers: [String],
-        following: [String],
-        privacy: {
-            favorites: {
-                type: String,
-                default: "public"
-            },
-            likes: {
-                type: String,
-                default: "public"
-            }
-        },
         reports: [String],
         shares: [String],
         views: {
             type: Number,
             default: 0
         },
-        userRoles: {
-            type: [String],
-            default: ["user"]
+
+        // TODO: Change this to beta after done being in alpha
+        type: {
+            type: String,
+            default: "alpha_tester"
         }
     },
     {
@@ -143,10 +157,12 @@ userSchema.pre("save", function (next) {
             lastActive: new Date(),
             lastActiveTimestamp: Date.now()
         },
-        nameAcronym: this.username
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
+        nameAcronym:
+            this.displayName ??
+            this.username
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
     });
 
     next();

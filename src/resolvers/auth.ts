@@ -280,7 +280,7 @@ export default {
             // Refetch the user from the database without the password and private key
             const user = await UserModel.findOne({
                 $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
-            }).select("-password -privateKey");
+            }).select("-password -privateKey -email");
 
             if (!user)
                 throw new GraphQLError("User not found", {

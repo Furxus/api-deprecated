@@ -24,6 +24,10 @@ const reportSchmea = new Schema({
     createdTimestamp: {
         type: Number,
         required: true
+    },
+    status: {
+        type: String,
+        default: "open"
     }
 });
 
