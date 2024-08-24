@@ -6,6 +6,7 @@ import ChannelSchema from "schemas/servers/Channel";
 import { genSnowflake, pubsub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
+import { User } from "@furxus/types";
 
 type CreateServerInput = {
     name: string;
@@ -38,7 +39,7 @@ enum ServerEvents {
 export default {
     Query: {
         // Get all the servers the user is in
-        getUserServers: async (_: any, __: any, { user }: { user: any }) =>
+        getUserServers: async (_: any, __: any, { user }: { user: User }) =>
             await ServerSchema.find({
                 members: { $in: [user.id] }
             }).sort({ createdAt: -1 }),
@@ -63,7 +64,7 @@ export default {
         getServerSettings: async (
             _: any,
             { id }: { id: string },
-            { user }: { user: any }
+            { user }: { user: User }
         ) => {
             // Find the servers
             const server = await ServerSchema.findOne({ id });
@@ -126,7 +127,7 @@ export default {
         createServer: async (
             _: any,
             { name, icon }: CreateServerInput,
-            { user }: { user: any }
+            { user }: { user: User }
         ) => {
             if (!name)
                 throw new GraphQLError("Name is required.", {
@@ -252,7 +253,7 @@ export default {
         joinServer: async (
             _: any,
             { code }: { code: string },
-            { user }: { user: any }
+            { user }: { user: User }
         ) => {
             // Verify the code
             const server = await ServerSchema.findOne({
@@ -310,7 +311,7 @@ export default {
         leaveServer: async (
             _: any,
             { id }: { id: string },
-            { user }: { user: any }
+            { user }: { user: User }
         ) => {
             // Find the server
             const server = await ServerSchema.findOne({ id });
@@ -374,7 +375,7 @@ export default {
         deleteServer: async (
             _: any,
             { id }: { id: string },
-            { user }: { user: any }
+            { user }: { user: User }
         ) => {
             // Find the server
             const server = await ServerSchema.findOne({
@@ -430,14 +431,15 @@ export default {
             // Only the owner of the server can see the server creation
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerCreated),
-                (payload, { userId }) => payload.serverCreated.owner === userId
+                (payload, { userId }: { userId: string }) =>
+                    payload.serverCreated.owner === userId
             )
         },
         serverJoined: {
             // Only the member that joined can see the server they joined
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerJoined),
-                async (payload, { userId }) => {
+                async (payload, { userId }: { userId: string }) => {
                     const member = await MemberSchema.findOne({
                         server: payload.serverJoined.id,
                         user: userId
@@ -451,7 +453,7 @@ export default {
             // Only the member that left can see the server they left
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerLeft),
-                async (payload, { userId }) => {
+                async (payload, { userId }: { userId: string }) => {
                     const member = await MemberSchema.findOne({
                         server: payload.serverLeft.id,
                         user: userId
@@ -465,7 +467,8 @@ export default {
             // Only the owner of the server can see the server deletion
             subscribe: withFilter(
                 () => pubsub.asyncIterator(ServerEvents.ServerDeleted),
-                (payload, { userId }) => payload.serverDeleted.owner === userId
+                (payload, { userId }: { userId: string }) =>
+                    payload.serverDeleted.owner === userId
             )
         }
     }

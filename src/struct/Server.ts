@@ -58,7 +58,7 @@ const serverCleanup = useServer(
         schema,
         context: async ({ connectionParams: params }) => {
             if (!params) throw new NotAuthorizedError();
-            const header = params.Authorization as any;
+            const header = params?.Authorization as string | undefined;
             if (!header) throw new NotAuthorizedError();
             const token = header.split(" ")[1];
             const user = Auth.checkToken(token);
@@ -68,7 +68,7 @@ const serverCleanup = useServer(
         },
         onConnect: async ({ connectionParams: params }) => {
             if (!params) throw new NotAuthorizedError();
-            const header = params.Authorization as any;
+            const header = params?.Authorization as string | undefined;
             if (!header) throw new NotAuthorizedError();
             const token = header.split(" ")[1];
             const user = Auth.checkToken(token);
@@ -83,7 +83,7 @@ const serverCleanup = useServer(
 export const genSnowflake = () =>
     Snowflake.generate({ timestamp: 1731283200, shard_id: threadId });
 
-let pubsub: PubSub | MongodbPubSub = new PubSub();
+let pubSub: PubSub | MongodbPubSub = new PubSub();
 if (process.env.NODE_ENV !== "development") {
     pubsub = new MongodbPubSub({
         connectionDb: new Db(
@@ -93,7 +93,7 @@ if (process.env.NODE_ENV !== "development") {
     });
 }
 
-export { pubsub };
+export { pubSub };
 
 export default class Server extends ApolloServer {
     readonly database: Database;

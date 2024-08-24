@@ -166,7 +166,7 @@ export default {
             // Choose a random default avatar for the user
             const randomSpecies =
                 species[Math.floor(Math.random() * species.length)];
-            const imageUrl = await asset.getObjectPublicUrls(
+            const imageUrl = asset.getObjectPublicUrls(
                 `defaultAvatar/${randomSpecies}.png`
             );
 
