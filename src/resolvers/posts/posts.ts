@@ -3,10 +3,14 @@ import { GraphQLError } from "graphql";
 import PostSchema from "schemas/posts/Post";
 import { genSnowflake, pubSub } from "struct/Server";
 import asset from "struct/AssetManagement";
+import CommentSchema from "schemas/posts/Comment";
 
 enum PostEvents {
     PostCreated = "POST_CREATED",
-    PostDeleted = "POST_DELETED"
+    PostDeleted = "POST_DELETED",
+    PostLiked = "POST_LIKED",
+    PostUnliked = "POST_UNLIKED",
+    CommentCreated = "COMMENT_CREATED"
 }
 
 export default {
@@ -43,6 +47,56 @@ export default {
                 });
 
             return post;
+        },
+        getComments: async (_: any, { postId }: { postId: string }) => {
+            const post = await PostSchema.findOne({
+                id: postId
+            });
+
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            return CommentSchema.find({
+                id: { $in: post.comments }
+            });
+        },
+
+        getPaginatedComments: async (
+            _: any,
+            { postId, page }: { postId: string; page: number }
+        ) => {
+            const post = await PostSchema.findOne({
+                id: postId
+            });
+
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            const comments = (
+                await CommentSchema.find({
+                    id: { $in: post.comments }
+                })
+            ).toSorted((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+            return comments.slice(page * 10, page * 10 + 10);
         }
     },
     Mutation: {
@@ -135,6 +189,128 @@ export default {
             await post.save();
 
             return post;
+        },
+        likePost: async (
+            _: any,
+            { postId }: { postId: string },
+            { user }: { user: User }
+        ) => {
+            const post = await PostSchema.findOne({
+                id: postId
+            });
+
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            if (post.likes.includes(user.id))
+                throw new GraphQLError("Post already liked.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post already liked."
+                            }
+                        ]
+                    }
+                });
+
+            post.likes.push(user.id);
+
+            await pubSub.publish(PostEvents.PostLiked, {
+                postLiked: post
+            });
+
+            await post.save();
+
+            return post;
+        },
+        unlikePost: async (
+            _: any,
+            { postId }: { postId: string },
+            { user }: { user: User }
+        ) => {
+            const post = await PostSchema.findOne({
+                id: postId
+            });
+
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            if (!post.likes.includes(user.id))
+                throw new GraphQLError("Post not liked.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not liked."
+                            }
+                        ]
+                    }
+                });
+
+            post.likes = post.likes.filter((like) => like !== user.id);
+
+            await pubSub.publish(PostEvents.PostUnliked, {
+                postUnliked: post
+            });
+
+            await post.save();
+
+            return post;
+        },
+        createComment: async (
+            _: any,
+            { postId, content }: { postId: string; content: string },
+            { user }: { user: User }
+        ) => {
+            const post = await PostSchema.findOne({ id: postId });
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            const comment = new CommentSchema({
+                id: genSnowflake(),
+                user: user.id,
+                content,
+                createdAt: new Date(),
+                createdTimestamp: Date.now()
+            });
+
+            post.comments.push(comment.id);
+
+            await post.save();
+
+            await pubSub.publish(PostEvents.CommentCreated, {
+                commentCreated: comment
+            });
+
+            return comment;
         }
     },
     Subscription: {
@@ -143,6 +319,15 @@ export default {
         },
         postDeleted: {
             subscribe: () => pubSub.asyncIterator(PostEvents.PostDeleted)
+        },
+        postLiked: {
+            subscribe: () => pubSub.asyncIterator(PostEvents.PostLiked)
+        },
+        postUnliked: {
+            subscribe: () => pubSub.asyncIterator(PostEvents.PostUnliked)
+        },
+        commentCreated: {
+            subscribe: () => pubSub.asyncIterator(PostEvents.CommentCreated)
         }
     }
 };

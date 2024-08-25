@@ -1,10 +1,10 @@
-import {withFilter} from "graphql-subscriptions";
-import {genSnowflake, pubSub} from "struct/Server";
+import { withFilter } from "graphql-subscriptions";
+import { genSnowflake, pubSub } from "struct/Server";
 import ChannelSchema from "schemas/servers/Channel";
 import ServerSchema from "schemas/servers/Server";
-import {GraphQLError} from "graphql";
+import { GraphQLError } from "graphql";
 
-import {User} from "@furxus/types";
+import { User } from "@furxus/types";
 import MemberSchema from "schemas/servers/Member";
 
 enum ChannelEvents {
@@ -17,9 +17,9 @@ export default {
         // Get all the channels from a server
         getChannels: async (
             _: any,
-            {serverId, type}: { serverId: string; type: string[] }
+            { serverId, type }: { serverId: string; type: string[] }
         ) => {
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -35,7 +35,7 @@ export default {
             if (type) {
                 return ChannelSchema.find({
                     server: server.id,
-                    type: {$in: type}
+                    type: { $in: type }
                 });
             }
 
@@ -46,9 +46,9 @@ export default {
         // Get a single channel from a server by its ID
         getChannel: async (
             _: any,
-            {serverId, id}: { serverId: string; id: string }
+            { serverId, id }: { serverId: string; id: string }
         ) => {
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -84,13 +84,20 @@ export default {
     },
     Mutation: {
         // Create a channel in a server
-        createChannel: async (_: any, {serverId, name, type}: {
-            serverId: string,
-            name: string,
-            type: string,
-        }) => {
+        createChannel: async (
+            _: any,
+            {
+                serverId,
+                name,
+                type
+            }: {
+                serverId: string;
+                name: string;
+                type: string;
+            }
+        ) => {
             // Check if the server exists
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -135,12 +142,19 @@ export default {
             return channel;
         },
         // Delete a channel from a server
-        deleteChannel: async (_: any, {serverId, id: channelId}: {
-            serverId: string,
-            id: string
-        }, { user }: { user: User }) => {
+        deleteChannel: async (
+            _: any,
+            {
+                serverId,
+                id: channelId
+            }: {
+                serverId: string;
+                id: string;
+            },
+            { user }: { user: User }
+        ) => {
             // Check if the server exists
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -153,13 +167,13 @@ export default {
                     }
                 });
 
+            const member = await MemberSchema.findOne({
+                server: server.id,
+                user: user.id
+            });
 
-                const member = await MemberSchema.findOne({
-                    server: server.id,
-                    user: user.id
-                });
-
-                if(!member) throw new GraphQLError("You are not a member of this server.", {
+            if (!member)
+                throw new GraphQLError("You are not a member of this server.", {
                     extensions: {
                         errors: [
                             {
@@ -169,6 +183,26 @@ export default {
                         ]
                     }
                 });
+
+            if (
+                !member.permissions.includes("ManageChannels") &&
+                !member.permissions.includes("Administrator") &&
+                member.id !== server.owner
+            )
+                throw new GraphQLError(
+                    "You do not have permission to delete channels.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "server",
+                                    message:
+                                        "You do not have permission to delete channels."
+                                }
+                            ]
+                        }
+                    }
+                );
 
             // Check if the channel exists
             const channel = await ChannelSchema.findOne({
@@ -210,7 +244,11 @@ export default {
             // Subscribe to channel creation events
             subscribe: withFilter(
                 () => pubSub.asyncIterator(ChannelEvents.ChannelCreated),
-                async (payload, {serverId}: { serverId: string }, {user}: { user: User }) => {
+                async (
+                    payload,
+                    { serverId }: { serverId: string },
+                    { user }: { user: User }
+                ) => {
                     if (payload.channelCreated.server !== serverId)
                         return false;
 
@@ -227,7 +265,11 @@ export default {
             // Subscribe to channel deletion events
             subscribe: withFilter(
                 () => pubSub.asyncIterator(ChannelEvents.ChannelDeleted),
-                async (payload, {serverId}: { serverId: string }, {user}: { user: User }) => {
+                async (
+                    payload,
+                    { serverId }: { serverId: string },
+                    { user }: { user: User }
+                ) => {
                     if (payload.channelDeleted.server !== serverId)
                         return false;
 

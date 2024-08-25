@@ -392,11 +392,7 @@ type Mutation {
     deletePost(id: String!): Boolean!
 
     # Comment Mutations
-    createComment(
-        postId: String!
-        content: String!
-        mentions: [String]!
-    ): Comment!
+    createComment(postId: String!, content: String!): Comment!
     updateComment(
         id: String!
         propertyNames: [String!]!
@@ -405,10 +401,10 @@ type Mutation {
     deleteComment(id: String!): Boolean!
 
     # Like Mutations
-    likePost(postId: String!): Boolean!
-    likeComment(commentId: String!): Boolean!
-    unlikePost(postId: String!): Boolean!
-    unlikeComment(commentId: String!): Boolean!
+    likePost(postId: String!): Post!
+    likeComment(commentId: String!): Post!
+    unlikePost(postId: String!): Post!
+    unlikeComment(commentId: String!): Post!
 
     # Follow Mutations
     followUser(userId: String!): Boolean!
@@ -466,7 +462,9 @@ type Query {
 
     # Comment Queries
     getComment(id: String!): Comment!
-    getComments: [Comment]!
+    getComments(postId: String!): [Comment]!
+    getPaginatedComments(postId: String!, page: Int!): [Comment]!
+    getCommentCount(postId: String!): Int!
 
     # Like Queries
     getLikes(postId: String!): [User]!
@@ -505,4 +503,9 @@ type Subscription {
     # Post Subscriptions
     postCreated: Post!
     postDeleted: Post!
+    postLiked: Post!
+    postUnliked: Post!
+
+    # Comment Subscriptions
+    commentCreated: Comment!
 }
