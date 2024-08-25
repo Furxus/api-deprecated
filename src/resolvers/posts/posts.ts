@@ -23,7 +23,7 @@ export default {
 
             if (!posts) return [];
 
-            return posts.slice(page * 10, page * 5 + 10);
+            return posts.slice(page * 10, page * 10 + 10);
         },
         getPost: async (_: any, { id }: { id: string }) => {
             const post = await PostSchema.findOne({
@@ -51,6 +51,18 @@ export default {
             { content }: { text?: string; content?: any },
             { user }: { user: User }
         ) => {
+            if (!content.text && !content.media)
+                throw new GraphQLError("Post cannot be empty.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "content",
+                                message: "Post cannot be empty."
+                            }
+                        ]
+                    }
+                });
+
             const { text, media } = content;
 
             let mediaFile = null;
