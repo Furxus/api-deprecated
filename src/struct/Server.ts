@@ -25,7 +25,7 @@ import { MongodbPubSub } from "graphql-mongodb-subscriptions";
 import { Db, MongoClient } from "mongodb";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import { threadId } from "worker_threads";
-import { User } from '@furxus/types';
+import { User } from "@furxus/types";
 
 const port = process.env.PORT || 1125;
 const app = express();
