@@ -5,6 +5,7 @@ import ServerSchema from "schemas/servers/Server";
 import {GraphQLError} from "graphql";
 
 import {User} from "@furxus/types";
+import MemberSchema from "schemas/servers/Member";
 
 enum ChannelEvents {
     ChannelCreated = "CHANNEL_CREATED",
@@ -137,7 +138,7 @@ export default {
         deleteChannel: async (_: any, {serverId, id: channelId}: {
             serverId: string,
             id: string
-        }) => {
+        }, { user }: { user: User }) => {
             // Check if the server exists
             const server = await ServerSchema.findOne({id: serverId});
             if (!server)
@@ -147,6 +148,23 @@ export default {
                             {
                                 type: "server",
                                 message: "Server not found."
+                            }
+                        ]
+                    }
+                });
+
+
+                const member = await MemberSchema.findOne({
+                    server: server.id,
+                    user: user.id
+                });
+
+                if(!member) throw new GraphQLError("You are not a member of this server.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "server",
+                                message: "You are not a member of this server."
                             }
                         ]
                     }

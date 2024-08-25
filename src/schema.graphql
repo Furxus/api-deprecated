@@ -100,9 +100,7 @@ type PostContent {
 
 input PostContentInput {
     text: String
-    image: Upload
-    video: Upload
-    audio: Upload
+    media: Upload
 }
 
 """
@@ -500,4 +498,8 @@ type Subscription {
     messageCreated(serverId: String!, channelId: String!): Message!
     messageUpdated(serverId: String!, channelId: String!): Message!
     messageDeleted(serverId: String!, channelId: String!): Message!
+
+    # Post Subscriptions
+    postCreated: Post!
+    postDeleted: Post!
 }
