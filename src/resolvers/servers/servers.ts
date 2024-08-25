@@ -227,14 +227,14 @@ export default {
                 const stream = iconFile.createReadStream();
                 let iconUrl;
                 if (iconFile.mimetype.includes("gif")) {
-                    iconFile = await asset.uploadStream(
+                    iconUrl = await asset.uploadStream(
                         stream,
-                        `servers/${server.id}/a_${genSnowflake()}.gif`
+                        `servers/${server.id}/icons/a_${genSnowflake()}.gif`
                     );
                 } else {
                     iconUrl = await asset.uploadStream(
                         stream,
-                        `servers/${server.id}/${genSnowflake()}.png`
+                        `servers/${server.id}/icons/${genSnowflake()}.png`
                     );
                 }
 

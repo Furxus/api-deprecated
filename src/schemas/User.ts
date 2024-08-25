@@ -161,6 +161,7 @@ userSchema.pre("save", function (next) {
             .split(" ")
             .map((n) => n[0])
             .join("")
+            .toUpperCase()
     });
 
     next();

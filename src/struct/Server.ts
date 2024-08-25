@@ -125,10 +125,16 @@ export default class Server extends ApolloServer {
         app.use(helmet());
         app.use(
             "/",
-            cors<cors.CorsRequest>(),
+            cors<cors.CorsRequest>({
+                origin: [
+                    "http://localhost:5173",
+                    "https://furxus.com",
+                    "https://cdn.furxus.com"
+                ]
+            }),
             graphqlUploadExpress({
                 maxFiles: 10,
-                maxFileSize: 10000000
+                maxFileSize: 26214400
             }),
             express.json(),
             expressMiddleware(this, {

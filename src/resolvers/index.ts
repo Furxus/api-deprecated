@@ -14,6 +14,7 @@ import messages from "./servers/messages";
 import serverScalars from "./servers/scalars";
 import postScalars from "./posts/scalars";
 import { Report, User } from "@furxus/types";
+import posts from "./posts/posts";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
@@ -82,18 +83,21 @@ export default {
         ...servers.Query,
         ...users.Query,
         ...channels.Query,
-        ...messages.Query
+        ...messages.Query,
+        ...posts.Query
     },
     Mutation: {
         ...auth.Mutation,
         ...servers.Mutation,
         ...users.Mutation,
         ...channels.Mutation,
-        ...messages.Mutation
+        ...messages.Mutation,
+        ...posts.Mutation
     },
     Subscription: {
         ...servers.Subscription,
         ...channels.Subscription,
-        ...messages.Subscription
+        ...messages.Subscription,
+        ...posts.Subscription
     }
 };

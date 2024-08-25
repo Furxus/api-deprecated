@@ -116,6 +116,7 @@ type User {
     defaultAvatar: String!
     banner: String
     displayName: String
+    nameAcronym: String!
     activity: Activity!
     bio: String
     createdAt: DateTime!
@@ -378,8 +379,8 @@ type Mutation {
     # Post Mutations
     createPost(
         content: PostContentInput!
-        hashtags: [String]!
-        mentions: [String]!
+        hashtags: [String!]
+        mentions: [String!]
         nsfw: Boolean
     ): Post!
     updatePost(
@@ -459,7 +460,8 @@ type Query {
 
     # Post Queries
     getPost(id: String!): Post!
-    getPosts: [Post]!
+    getPosts: [Post!]
+    getPaginatedPosts(page: Int!): [Post!]!
 
     # Comment Queries
     getComment(id: String!): Comment!
