@@ -5,16 +5,17 @@ import jwt, {
 } from "jsonwebtoken";
 import { decrypt } from "./Crypt";
 import logger from "./Logger";
+import { User } from "@furxus/types";
 
 const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error("No JWT secret provided");
 
 export default class Auth {
     // Checking JWT token with decrypting it
-    static checkToken(token: string) {
+    static checkToken(token: string): User | null {
         try {
             // verify token
-            return jwt.verify(decrypt(token), JWT_SECRET!);
+            return jwt.verify(decrypt(token), JWT_SECRET!) as User;
         } catch (err) {
             if (
                 err instanceof TokenExpiredError ||
@@ -27,5 +28,7 @@ export default class Auth {
 
             logger.error(err);
         }
+
+        return null;
     }
 }

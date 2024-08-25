@@ -25,6 +25,7 @@ import { MongodbPubSub } from "graphql-mongodb-subscriptions";
 import { Db, MongoClient } from "mongodb";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import { threadId } from "worker_threads";
+import { User } from '@furxus/types';
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -175,8 +176,6 @@ export default class Server extends ApolloServer {
                     if (token) {
                         const user = Auth.checkToken(token);
                         if (!user) throw new NotAuthorizedError();
-                        if (typeof user === "string")
-                            throw new NotAuthorizedError();
 
                         if (!schema.associatedUsers.includes(user.id))
                             schema.associatedUsers.push(user.id);
