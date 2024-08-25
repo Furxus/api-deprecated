@@ -157,12 +157,10 @@ userSchema.pre("save", function (next) {
             lastActive: new Date(),
             lastActiveTimestamp: Date.now()
         },
-        nameAcronym:
-            this.displayName ??
-            this.username
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
+        nameAcronym: (this.displayName ?? this.username)
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
     });
 
     next();
