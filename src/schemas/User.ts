@@ -135,8 +135,8 @@ const userSchema = new Schema(
 
         // TODO: Change this to beta after done being in alpha
         type: {
-            type: String,
-            default: "alpha_tester"
+            type: [String],
+            default: ["user", "alpha_tester"]
         }
     },
     {

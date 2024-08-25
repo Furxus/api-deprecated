@@ -109,7 +109,7 @@ User type contains all data related to a user (some not implemented yet)
 type User {
     id: String!
     username: String!
-    email: EmailAddress!
+    email: EmailAddress
     age: Int
     dateOfBirth: Date
     avatar: String

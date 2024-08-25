@@ -4,34 +4,41 @@ import { genSnowflake } from "struct/Server";
 
 export default {
     Query: {
-        getPosts: async () => (await PostSchema.find()).toSorted((a, b) => a.createdTimestamp - b.createdTimestamp),
-        getPost: async (_: any, { id }: { id: string})  => {
+        getPosts: async () =>
+            (await PostSchema.find()).toSorted(
+                (a, b) => a.createdTimestamp - b.createdTimestamp
+            ),
+        getPost: async (_: any, { id }: { id: string }) => {
             const post = await PostSchema.findOne({
                 id
             });
 
-            if(!post) throw new GraphQLError("Post not found", {
-                extensions: {
-                    errors: [
-                        {
-                            type: "post",
-                            message: "Post not found."
-                        }
-                    ]
-                }
-            });
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
 
             return post;
         }
     },
     Mutation: {
-        createPost:async  (_: any, { text, media }: { text?: string; media?: any }) => {
+        createPost: async (
+            _: any,
+            { text, media }: { text?: string; media?: any }
+        ) => {
             let mediaFile = null;
             try {
-                if(media) {
+                if (media) {
                     mediaFile = await media;
                 }
-            } catch(error) {
+            } catch (_) {
                 throw new GraphQLError(
                     "An error occurred while uploading the media.",
                     {
@@ -50,7 +57,7 @@ export default {
 
             const post = new PostSchema({
                 id: genSnowflake(),
-                createdAt: new Date(),
+                createdAt: new Date()
             });
         }
     }
