@@ -3,7 +3,7 @@ import ServerSchema from "schemas/servers/Server";
 import asset from "struct/AssetManagement";
 import logger from "struct/Logger";
 import ChannelSchema from "schemas/servers/Channel";
-import { genSnowflake, pubsub } from "struct/Server";
+import { genSnowflake, pubSub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
 import { User } from "@furxus/types";
@@ -244,7 +244,7 @@ export default {
             await server.save();
 
             // Send the server creation to the websocket
-            await pubsub.publish(ServerEvents.ServerCreated, {
+            await pubSub.publish(ServerEvents.ServerCreated, {
                 serverCreated: server
             });
 
@@ -302,7 +302,7 @@ export default {
             await server.save();
 
             // Send the server join to the websocket
-            await pubsub.publish(ServerEvents.ServerJoined, {
+            await pubSub.publish(ServerEvents.ServerJoined, {
                 serverJoined: server
             });
 
@@ -366,7 +366,7 @@ export default {
             await server.save();
 
             // Send the server leave to the websocket
-            await pubsub.publish(ServerEvents.ServerLeft, {
+            await pubSub.publish(ServerEvents.ServerLeft, {
                 serverLeft: server
             });
 
@@ -414,7 +414,7 @@ export default {
             }
 
             // Send the server deletion to the websocket before deleting it, so the client can update
-            await pubsub.publish(ServerEvents.ServerDeleted, {
+            await pubSub.publish(ServerEvents.ServerDeleted, {
                 serverDeleted: server
             });
 
@@ -430,7 +430,7 @@ export default {
         serverCreated: {
             // Only the owner of the server can see the server creation
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ServerEvents.ServerCreated),
+                () => pubSub.asyncIterator(ServerEvents.ServerCreated),
                 (payload, { userId }: { userId: string }) =>
                     payload.serverCreated.owner === userId
             )
@@ -438,7 +438,7 @@ export default {
         serverJoined: {
             // Only the member that joined can see the server they joined
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ServerEvents.ServerJoined),
+                () => pubSub.asyncIterator(ServerEvents.ServerJoined),
                 async (payload, { userId }: { userId: string }) => {
                     const member = await MemberSchema.findOne({
                         server: payload.serverJoined.id,
@@ -452,7 +452,7 @@ export default {
         serverLeft: {
             // Only the member that left can see the server they left
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ServerEvents.ServerLeft),
+                () => pubSub.asyncIterator(ServerEvents.ServerLeft),
                 async (payload, { userId }: { userId: string }) => {
                     const member = await MemberSchema.findOne({
                         server: payload.serverLeft.id,
@@ -466,7 +466,7 @@ export default {
         serverDeleted: {
             // Only the owner of the server can see the server deletion
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ServerEvents.ServerDeleted),
+                () => pubSub.asyncIterator(ServerEvents.ServerDeleted),
                 (payload, { userId }: { userId: string }) =>
                     payload.serverDeleted.owner === userId
             )

@@ -85,7 +85,7 @@ export const genSnowflake = () =>
 
 let pubSub: PubSub | MongodbPubSub = new PubSub();
 if (process.env.NODE_ENV !== "development") {
-    pubsub = new MongodbPubSub({
+    pubSub = new MongodbPubSub({
         connectionDb: new Db(
             new MongoClient(process.env.DATABASE ?? ""),
             "furxus"

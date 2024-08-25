@@ -1,5 +1,5 @@
 import {withFilter} from "graphql-subscriptions";
-import {genSnowflake, pubsub} from "struct/Server";
+import {genSnowflake, pubSub} from "struct/Server";
 import ChannelSchema from "schemas/servers/Channel";
 import ServerSchema from "schemas/servers/Server";
 import {GraphQLError} from "graphql";
@@ -127,7 +127,7 @@ export default {
             await server.save();
 
             // Send the channel creation to the websocket
-            await pubsub.publish(ChannelEvents.ChannelCreated, {
+            await pubSub.publish(ChannelEvents.ChannelCreated, {
                 channelCreated: channel
             });
 
@@ -180,7 +180,7 @@ export default {
             await server.save();
 
             // Send the channel deletion to the websocket
-            await pubsub.publish(ChannelEvents.ChannelDeleted, {
+            await pubSub.publish(ChannelEvents.ChannelDeleted, {
                 channelDeleted: channel
             });
 
@@ -191,7 +191,7 @@ export default {
         channelCreated: {
             // Subscribe to channel creation events
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ChannelEvents.ChannelCreated),
+                () => pubSub.asyncIterator(ChannelEvents.ChannelCreated),
                 async (payload, {serverId}: { serverId: string }, {user}: { user: User }) => {
                     if (payload.channelCreated.server !== serverId)
                         return false;
@@ -208,7 +208,7 @@ export default {
         channelDeleted: {
             // Subscribe to channel deletion events
             subscribe: withFilter(
-                () => pubsub.asyncIterator(ChannelEvents.ChannelDeleted),
+                () => pubSub.asyncIterator(ChannelEvents.ChannelDeleted),
                 async (payload, {serverId}: { serverId: string }, {user}: { user: User }) => {
                     if (payload.channelDeleted.server !== serverId)
                         return false;

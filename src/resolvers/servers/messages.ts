@@ -2,7 +2,7 @@ import {GraphQLError} from "graphql";
 import MessageSchema from "schemas/servers/Message";
 import ServerSchema from "schemas/servers/Server";
 import ChannelSchema from "schemas/servers/Channel";
-import {genSnowflake, pubsub} from "struct/Server";
+import {genSnowflake, pubSub} from "struct/Server";
 import {withFilter} from "graphql-subscriptions";
 import {User} from "@furxus/types";
 
@@ -132,7 +132,7 @@ export default {
             await message.save();
 
             // Send the message to the websocket
-            await pubsub.publish(MessageEvents.MessageCreated, {
+            await pubSub.publish(MessageEvents.MessageCreated, {
                 messageCreated: message
             });
 
@@ -206,7 +206,7 @@ export default {
         messageCreated: {
             // Subscribe to message creation events
             subscribe: withFilter(
-                () => pubsub.asyncIterator(MessageEvents.MessageCreated),
+                () => pubSub.asyncIterator(MessageEvents.MessageCreated),
                 async (_, {serverId, channelId}: { serverId: string, channelId: string }, {user}: { user: User }) => {
                     const server = await ServerSchema.findOne({id: serverId});
                     if (!server) return false;
@@ -222,7 +222,7 @@ export default {
         },
         messageDeleted: {
             subscribe: withFilter(
-                () => pubsub.asyncIterator(MessageEvents.MessageDeleted),
+                () => pubSub.asyncIterator(MessageEvents.MessageDeleted),
                 async (_, {serverId, channelId}: { serverId: string, channelId: string }, {user}: { user: User }) => {
                     const server = await ServerSchema.findOne({id: serverId});
                     if (!server) return false;
