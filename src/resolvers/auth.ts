@@ -10,6 +10,7 @@ import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
 import { genSnowflake } from "struct/Server";
 import Auth from "struct/Auth";
+import { User } from "@furxus/types";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -334,6 +335,13 @@ export default {
                 token: encrypt(user.generateToken()),
                 ...user.toJSON()
             };
+        },
+        updateAuthUser: async (
+            _: any,
+            { fields, values }: { fields: string[]; values: any[] },
+            { user }: { user: User }
+        ) => {
+            console.log(fields, values);
         }
     }
 };

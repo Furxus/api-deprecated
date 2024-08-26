@@ -311,6 +311,7 @@ type Mutation {
     registerUser(input: RegisterInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
     refreshUser(token: String!): Auth!
+    updateAuthUser(fields: [String!]!, values: [Any!]!): User!
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
