@@ -338,10 +338,26 @@ export default {
         },
         updateAuthUser: async (
             _: any,
-            { fields, values }: { fields: string[]; values: any[] },
+            { fields }: { fields: any },
             { user }: { user: User }
         ) => {
-            console.log(fields, values);
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            console.log(fields);
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "id",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
         }
     }
 };

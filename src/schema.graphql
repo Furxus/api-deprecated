@@ -307,11 +307,16 @@ type Auth @inherits(type: "User") {
     token: String!
 }
 
+input UpdateUserInput {
+    field: String!
+    value: Any!
+}
+
 type Mutation {
     registerUser(input: RegisterInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
     refreshUser(token: String!): Auth!
-    updateAuthUser(fields: [String!]!, values: [Any!]!): User!
+    updateAuthUser(input: [UpdateUserInput!]!): User!
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
