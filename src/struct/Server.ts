@@ -126,7 +126,7 @@ export default class Server extends ApolloServer {
             "/",
             cors<cors.CorsRequest>({
                 origin: [
-                    "http://localhost:5173",
+                    "http://localhost:1420",
                     "https://furxus.com",
                     "https://cdn.furxus.com"
                 ]
