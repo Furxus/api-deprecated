@@ -1,7 +1,8 @@
 import UserSchema from "schemas/User";
 import CommentSchema from "schemas/posts/Comment";
 import ReportSchema from "schemas/Report";
-import { Post } from "@furxus/types";
+import PostSchema from "schemas/posts/Post";
+import { Comment, Post } from "@furxus/types";
 
 export default {
     Post: {
@@ -32,6 +33,24 @@ export default {
         shares: async (parent: Post) =>
             UserSchema.find({
                 id: { $in: parent.shares }
+            })
+    },
+    Comment: {
+        post: async (parent: Comment) =>
+            PostSchema.findOne({
+                id: parent.post
+            }),
+        user: async (parent: Comment) =>
+            UserSchema.findOne({
+                id: parent.user
+            }),
+        likes: async (parent: Comment) =>
+            UserSchema.find({
+                id: { $in: parent.likes }
+            }),
+        reports: async (parent: Comment) =>
+            ReportSchema.find({
+                id: { $in: parent.reports }
             })
     }
 };

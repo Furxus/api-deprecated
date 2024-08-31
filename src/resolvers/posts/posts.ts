@@ -297,6 +297,7 @@ export default {
             const comment = new CommentSchema({
                 id: genSnowflake(),
                 user: user.id,
+                post: post.id,
                 content,
                 createdAt: new Date(),
                 createdTimestamp: Date.now()
@@ -305,6 +306,7 @@ export default {
             post.comments.push(comment.id);
 
             await post.save();
+            await comment.save();
 
             await pubSub.publish(PostEvents.CommentCreated, {
                 commentCreated: comment
