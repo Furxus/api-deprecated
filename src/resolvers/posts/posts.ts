@@ -70,6 +70,25 @@ export default {
             });
         },
 
+        getCommentCount: async (_: any, { postId }: { postId: string }) => {
+            const post = await PostSchema.findOne({
+                id: postId
+            });
+
+            if (!post)
+                throw new GraphQLError("Post not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "post",
+                                message: "Post not found."
+                            }
+                        ]
+                    }
+                });
+
+            return post.comments.length;
+        },
         getPaginatedComments: async (
             _: any,
             { postId, page }: { postId: string; page: number }
@@ -94,7 +113,7 @@ export default {
                 await CommentSchema.find({
                     id: { $in: post.comments }
                 })
-            ).toSorted((a, b) => a.createdTimestamp - b.createdTimestamp);
+            ).toSorted((a, b) => b.createdTimestamp - a.createdTimestamp);
 
             return comments.slice(page * 10, page * 10 + 10);
         }
