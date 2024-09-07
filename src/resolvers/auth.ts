@@ -345,8 +345,6 @@ export default {
                 id: user.id
             });
 
-            console.log(fields);
-
             if (!userDoc)
                 throw new GraphQLError("User not found", {
                     extensions: {

@@ -138,6 +138,7 @@ type User {
     reports: [Report]!
     shares: [Post]!
     views: Int!
+    type: [String]!
 }
 
 type Preferences {
@@ -464,12 +465,12 @@ type Query {
     # Post Queries
     getPost(id: String!): Post!
     getPosts: [Post!]
-    getPaginatedPosts(page: Int!): [Post!]!
+    getPaginatedPosts(offset: Int!): [Post!]!
 
     # Comment Queries
     getComment(id: String!): Comment!
     getComments(postId: String!): [Comment]!
-    getPaginatedComments(postId: String!, page: Int!): [Comment]!
+    getPaginatedComments(postId: String!, offset: Int!): [Comment]!
     getCommentCount(postId: String!): Int!
 
     # Like Queries

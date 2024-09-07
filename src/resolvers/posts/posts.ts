@@ -20,14 +20,17 @@ export default {
                 (a, b) => a.createdTimestamp - b.createdTimestamp
             ),
 
-        getPaginatedPosts: async (_: any, { page }: { page: number }) => {
+        getPaginatedPosts: async (
+            _: any,
+            { offset, limit = 10 }: { offset: number; limit?: number }
+        ) => {
             const posts = (await PostSchema.find()).toSorted(
                 (a, b) => a.createdTimestamp - b.createdTimestamp
             );
 
             if (!posts) return [];
 
-            return posts.slice(page * 10, page * 10 + 10);
+            return posts.slice(offset, offset + limit);
         },
         getPost: async (_: any, { id }: { id: string }) => {
             const post = await PostSchema.findOne({
@@ -65,9 +68,11 @@ export default {
                     }
                 });
 
-            return CommentSchema.find({
-                id: { $in: post.comments }
-            });
+            return (
+                await CommentSchema.find({
+                    id: { $in: post.comments }
+                })
+            ).toSorted((a, b) => b.createdTimestamp - a.createdTimestamp);
         },
 
         getCommentCount: async (_: any, { postId }: { postId: string }) => {
@@ -91,7 +96,7 @@ export default {
         },
         getPaginatedComments: async (
             _: any,
-            { postId, page }: { postId: string; page: number }
+            { postId, offset }: { postId: string; offset: number }
         ) => {
             const post = await PostSchema.findOne({
                 id: postId
@@ -113,9 +118,11 @@ export default {
                 await CommentSchema.find({
                     id: { $in: post.comments }
                 })
-            ).toSorted((a, b) => b.createdTimestamp - a.createdTimestamp);
+            ).toSorted((a, b) => a.createdTimestamp - b.createdTimestamp);
 
-            return comments.slice(page * 10, page * 10 + 10);
+            if (!comments) return [];
+
+            return comments.slice(offset, offset + 10);
         }
     },
     Mutation: {
