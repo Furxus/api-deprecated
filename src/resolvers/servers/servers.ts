@@ -38,11 +38,16 @@ enum ServerEvents {
 
 export default {
     Query: {
-        // Get all the servers the user is in
-        getUserServers: async (_: any, __: any, { user }: { user: User }) =>
-            await ServerSchema.find({
-                members: { $in: [user.id] }
-            }).sort({ createdAt: -1 }),
+        // Get all the servers the user is in and sort them by the time they joined
+        getUserServers: async (_: any, __: any, { user }: { user: User }) => {
+            const member = (await MemberSchema.find({ user: user.id })).sort(
+                (a, b) => b.joinedTimestamp - a.joinedTimestamp
+            );
+
+            return await ServerSchema.find({
+                id: { $in: member.map((m) => m.server) }
+            });
+        },
         // Get a single server by its ID
         getServer: async (_: any, { id }: { id: string }) => {
             const server = await ServerSchema.findOne({ id });

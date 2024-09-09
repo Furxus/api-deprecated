@@ -36,7 +36,22 @@ export default {
             // Grab inputs from the request
             const inputEmail = input.email.toLowerCase();
             const inputUsername = input.username.toLowerCase();
-            const dateOfBirth = moment(new Date(input.dateOfBirth));
+            const dateOfBirth = moment(
+                new Date(input.dateOfBirth),
+                "MM/DD/YYYY"
+            );
+            if (!dateOfBirth.isValid())
+                throw new GraphQLError("Invalid date of birth", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "dateOfBirth",
+                                message:
+                                    "Make sure that the date of birth is in the format MM/DD/YYYY"
+                            }
+                        ]
+                    }
+                });
 
             // Check if the user is at least 13 years old
             if (moment().diff(dateOfBirth, "years") < 13)
