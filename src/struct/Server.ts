@@ -89,7 +89,11 @@ if (process.env.NODE_ENV !== "development") {
         connectionDb: new Db(
             new MongoClient(process.env.DATABASE ?? ""),
             "furxus"
-        )
+        ),
+        channelOptions: {
+            size: 100000000000000,
+            max: 100000000000000
+        }
     });
 }
 
