@@ -25,6 +25,7 @@ import { MongodbPubSub } from "graphql-mongodb-subscriptions";
 import { Db, MongoClient } from "mongodb";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import { threadId } from "worker_threads";
+import * as postMark from "postmark";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -80,7 +81,7 @@ const serverCleanup = useServer(
     wsServer
 );
 
-export const genSnowflake = () =>
+const genSnowflake = () =>
     Snowflake.generate({ timestamp: 1731283200, shard_id: threadId });
 
 let pubSub: PubSub | MongodbPubSub = new PubSub();
@@ -97,7 +98,9 @@ if (process.env.NODE_ENV !== "development") {
     });
 }
 
-export { pubSub };
+const postmark = new postMark.ServerClient(process.env.POSTMARK_KEY ?? "");
+
+export { pubSub, genSnowflake, postmark };
 
 export default class Server extends ApolloServer {
     readonly database: Database;

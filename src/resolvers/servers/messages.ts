@@ -1,10 +1,10 @@
-import {GraphQLError} from "graphql";
+import { GraphQLError } from "graphql";
 import MessageSchema from "schemas/servers/Message";
 import ServerSchema from "schemas/servers/Server";
 import ChannelSchema from "schemas/servers/Channel";
-import {genSnowflake, pubSub} from "struct/Server";
-import {withFilter} from "graphql-subscriptions";
-import {User} from "@furxus/types";
+import { genSnowflake, pubSub } from "struct/Server";
+import { withFilter } from "graphql-subscriptions";
+import { User } from "@furxus/types";
 
 enum MessageEvents {
     MessageCreated = "MESSAGE_CREATED",
@@ -15,9 +15,9 @@ export default {
     Query: {
         getMessages: async (
             _: any,
-            {serverId, channelId}: { serverId: string; channelId: string }
+            { serverId, channelId }: { serverId: string; channelId: string }
         ) => {
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -65,7 +65,7 @@ export default {
                 channelId: string;
                 content: string;
             },
-            {user}: { user: User }
+            { user }: { user: User }
         ) => {
             // Check if the message is valid
             if (content.length < 1 || content.length > 2000)
@@ -85,7 +85,7 @@ export default {
                 );
 
             // Check if the server exists
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -140,14 +140,18 @@ export default {
         },
         deleteMessage: async (
             _: any,
-            {serverId, channelId, id: messageId}: {
+            {
+                serverId,
+                channelId,
+                id: messageId
+            }: {
                 serverId: string;
                 channelId: string;
                 id: string;
             }
         ) => {
             // Check if the server exists
-            const server = await ServerSchema.findOne({id: serverId});
+            const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
                     extensions: {
@@ -197,7 +201,12 @@ export default {
                     }
                 });
 
-            await MessageSchema.deleteOne({id: messageId});
+            await MessageSchema.deleteOne({ id: messageId });
+
+            // Send the message to the websocket
+            await pubSub.publish(MessageEvents.MessageDeleted, {
+                messageDeleted: message
+            });
 
             return message;
         }
@@ -207,32 +216,34 @@ export default {
             // Subscribe to message creation events
             subscribe: withFilter(
                 () => pubSub.asyncIterator(MessageEvents.MessageCreated),
-                async (_, {serverId, channelId}: { serverId: string, channelId: string }, {user}: { user: User }) => {
-                    const server = await ServerSchema.findOne({id: serverId});
-                    if (!server) return false;
-                    const channel = await ChannelSchema.findOne({
-                        id: channelId,
-                        server: serverId
-                    });
-
-                    if (!channel) return false;
-                    return server.members.includes(user.id);
+                async (
+                    { messageCreated },
+                    {
+                        serverId,
+                        channelId
+                    }: { serverId: string; channelId: string }
+                ) => {
+                    return (
+                        messageCreated.server === serverId &&
+                        messageCreated.channel === channelId
+                    );
                 }
             )
         },
         messageDeleted: {
             subscribe: withFilter(
                 () => pubSub.asyncIterator(MessageEvents.MessageDeleted),
-                async (_, {serverId, channelId}: { serverId: string, channelId: string }, {user}: { user: User }) => {
-                    const server = await ServerSchema.findOne({id: serverId});
-                    if (!server) return false;
-                    const channel = await ChannelSchema.findOne({
-                        id: channelId,
-                        server: serverId
-                    });
-
-                    if (!channel) return false;
-                    return server.members.includes(user.id);
+                async (
+                    { messageDeleted },
+                    {
+                        serverId,
+                        channelId
+                    }: { serverId: string; channelId: string }
+                ) => {
+                    return (
+                        messageDeleted.server === serverId &&
+                        messageDeleted.channel === channelId
+                    );
                 }
             )
         }

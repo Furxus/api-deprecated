@@ -4,7 +4,7 @@ import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
 import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
-import {Channel, Invite, Member, Message, Role, Server} from "@furxus/types";
+import { Channel, Invite, Member, Message, Role, Server } from "@furxus/types";
 
 export default {
     Server: {
@@ -68,7 +68,7 @@ export default {
             }),
         children: async (parent: Channel) =>
             ChannelSchema.find({
-                id: {$in: parent.children}
+                id: { $in: parent.children }
             })
     },
     Message: {
@@ -82,7 +82,7 @@ export default {
                 id: parent.server
             }),
         channel: async (parent: Message) =>
-            ServerSchema.findOne({
+            ChannelSchema.findOne({
                 id: parent.channel
             })
     }

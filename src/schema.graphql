@@ -346,7 +346,7 @@ type Mutation {
         channelId: String!
         content: String!
     ): Message!
-    deleteMessage(serverId: String!, channelId: String!, id: String!): Boolean!
+    deleteMessage(serverId: String!, channelId: String!, id: String!): Message!
     updateMessage(
         serverId: String!
         channelId: String!
