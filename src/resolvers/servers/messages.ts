@@ -5,6 +5,9 @@ import ChannelSchema from "schemas/servers/Channel";
 import { genSnowflake, pubSub } from "struct/Server";
 import { withFilter } from "graphql-subscriptions";
 import { User } from "@furxus/types";
+import { extractUrls } from "struct/Util";
+import urlMetadata from "url-metadata";
+import { MessageEmbed } from "@furxus/types";
 
 enum MessageEvents {
     MessageCreated = "MESSAGE_CREATED",
@@ -115,6 +118,30 @@ export default {
                         ]
                     }
                 });
+
+            const urls = extractUrls(content);
+            const metadatas: urlMetadata.Result[] = [];
+            for (const url of urls) {
+                const metadata = await urlMetadata(url);
+                metadatas.push(metadata);
+            }
+
+            const embeds: MessageEmbed[] = [];
+            for (const metadata of metadatas) {
+                embeds.push({
+                    title: metadata["og:title"],
+                    description: metadata["og:description"],
+                    url: metadata["og:url"],
+                    image: metadata["og:image"],
+                    author: {
+                        name: metadata["og:site_name"],
+                        url: metadata["og:url"],
+                        icon_url: metadata.favicons[0]
+                    }
+                });
+            }
+
+            console.log(embeds);
 
             // Create the message
             const message = new MessageSchema({
