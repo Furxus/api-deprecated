@@ -10,6 +10,18 @@ const messageSchema = new Schema({
         type: String,
         required: true
     },
+    embeds: {
+        type: Array,
+        required: false
+    },
+    attachments: {
+        type: Array,
+        required: false
+    },
+    mentions: {
+        type: Array,
+        required: false
+    },
     channel: {
         type: String,
         required: true
