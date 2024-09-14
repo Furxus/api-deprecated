@@ -25,7 +25,8 @@ import { MongodbPubSub } from "graphql-mongodb-subscriptions";
 import { Db, MongoClient } from "mongodb";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import { threadId } from "worker_threads";
-import * as postMark from "postmark";
+import Mailgun from "mailgun.js";
+import formData from "form-data";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -98,9 +99,13 @@ if (process.env.NODE_ENV !== "development") {
     });
 }
 
-const postmark = new postMark.ServerClient(process.env.POSTMARK_KEY ?? "");
+const mailgunInstance = new Mailgun(formData);
+const mailgun = mailgunInstance.client({
+    key: process.env.MAILGUN_KEY ?? "",
+    username: "api"
+});
 
-export { pubSub, genSnowflake, postmark };
+export { pubSub, genSnowflake, mailgun };
 
 export default class Server extends ApolloServer {
     readonly database: Database;
