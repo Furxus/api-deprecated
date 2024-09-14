@@ -136,12 +136,10 @@ export default {
                     author: {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
-                        icon_url: metadata.favicons[0]
+                        iconUrl: metadata.favicons[0]?.href
                     }
                 });
             }
-
-            console.log(embeds);
 
             // Create the message
             const message = new MessageSchema({
@@ -150,6 +148,7 @@ export default {
                 channel: channel.id,
                 member: user.id,
                 content,
+                embeds,
                 createdAt: new Date(),
                 createdTimestamp: Date.now()
             });

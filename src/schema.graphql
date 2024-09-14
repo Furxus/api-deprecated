@@ -242,6 +242,8 @@ type Channel {
 type Message {
     id: String!
     content: String!
+    embeds: [MessageEmbed]!
+    attachments: [MessageAttachment]!
     channel: Channel!
     member: Member!
     server: Server!
@@ -249,6 +251,35 @@ type Message {
     createdTimestamp: Timestamp!
     updatedAt: DateTime!
     updatedTimestamp: Timestamp!
+}
+
+type MessageEmbed {
+    title: String
+    description: String
+    url: String
+    color: String
+    timestamp: Timestamp
+    author: EmbedAuthor
+    footer: EmbedFooter
+    image: String
+}
+
+type MessageAttachment {
+    url: String!
+    filename: String!
+    size: Int!
+    contentType: String!
+}
+
+type EmbedAuthor {
+    name: String!
+    url: String
+    iconUrl: String
+}
+
+type EmbedFooter {
+    text: String!
+    iconUrl: String
 }
 
 type Activity {
