@@ -180,6 +180,22 @@ export default {
             },
             { user }: { user: User }
         ) => {
+            if (content.length < 1 || content.length > 2000)
+                throw new GraphQLError(
+                    "Message must be between 1 and 2000 characters.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "message",
+                                    message:
+                                        "Message must be between 1 and 2000 characters."
+                                }
+                            ]
+                        }
+                    }
+                );
+
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
                 throw new GraphQLError("Server not found.", {
@@ -243,24 +259,33 @@ export default {
                     }
                 );
 
-            if (content.length < 1 || content.length > 2000)
-                throw new GraphQLError(
-                    "Message must be between 1 and 2000 characters.",
-                    {
-                        extensions: {
-                            errors: [
-                                {
-                                    type: "message",
-                                    message:
-                                        "Message must be between 1 and 2000 characters."
-                                }
-                            ]
-                        }
-                    }
-                );
-
             message.content = content;
             message.edited = true;
+
+            const urls = extractUrls(content);
+            const metadatas: urlMetadata.Result[] = [];
+            for (const url of urls) {
+                const metadata = await urlMetadata(url);
+                metadatas.push(metadata);
+            }
+
+            const embeds: MessageEmbed[] = [];
+            for (const metadata of metadatas) {
+                embeds.push({
+                    title: metadata["og:title"],
+                    description: metadata["og:description"],
+                    url: metadata["og:url"],
+                    image: metadata["og:image"],
+                    author: {
+                        name: metadata["og:site_name"],
+                        url: metadata["og:url"],
+                        iconUrl: metadata.favicons[0]?.href
+                    }
+                });
+            }
+
+            message.embeds = embeds;
+
             await message.save();
 
             // Send the message to the websocket
