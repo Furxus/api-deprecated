@@ -242,6 +242,7 @@ type Channel {
 type Message {
     id: String!
     content: String!
+    edited: Boolean!
     embeds: [MessageEmbed]!
     attachments: [MessageAttachment]!
     channel: Channel!
@@ -378,7 +379,7 @@ type Mutation {
         content: String!
     ): Message!
     deleteMessage(serverId: String!, channelId: String!, id: String!): Message!
-    updateMessage(
+    editMessage(
         serverId: String!
         channelId: String!
         id: String!
@@ -535,7 +536,7 @@ type Subscription {
 
     # Message Subscriptions
     messageCreated(serverId: String!, channelId: String!): Message!
-    messageUpdated(serverId: String!, channelId: String!): Message!
+    messageEdited(serverId: String!, channelId: String!): Message!
     messageDeleted(serverId: String!, channelId: String!): Message!
 
     # Post Subscriptions

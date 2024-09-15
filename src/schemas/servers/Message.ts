@@ -10,6 +10,10 @@ const messageSchema = new Schema({
         type: String,
         required: true
     },
+    edited: {
+        type: Boolean,
+        default: false
+    },
     embeds: {
         type: Array,
         required: false

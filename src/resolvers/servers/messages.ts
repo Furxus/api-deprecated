@@ -11,6 +11,7 @@ import { MessageEmbed } from "@furxus/types";
 
 enum MessageEvents {
     MessageCreated = "MESSAGE_CREATED",
+    MessageEdited = "MESSAGE_EDITED",
     MessageDeleted = "MESSAGE_DELETED"
 }
 
@@ -164,6 +165,112 @@ export default {
 
             return message;
         },
+        editMessage: async (
+            _: any,
+            {
+                serverId,
+                channelId,
+                id: messageId,
+                content
+            }: {
+                serverId: string;
+                channelId: string;
+                id: string;
+                content: string;
+            },
+            { user }: { user: User }
+        ) => {
+            const server = await ServerSchema.findOne({ id: serverId });
+            if (!server)
+                throw new GraphQLError("Server not found.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "server",
+                                message: "Server not found."
+                            }
+                        ]
+                    }
+                });
+
+            const channel = await ChannelSchema.findOne({
+                id: channelId,
+                server: serverId
+            });
+            if (!channel)
+                throw new GraphQLError("Channel not found.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "channel",
+                                message: "Channel not found."
+                            }
+                        ]
+                    }
+                });
+
+            const message = await MessageSchema.findOne({
+                id: messageId,
+                server: serverId,
+                channel: channelId
+            });
+
+            if (!message)
+                throw new GraphQLError("Message not found.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "message",
+                                message: "Message not found."
+                            }
+                        ]
+                    }
+                });
+
+            if (message.member !== user.id)
+                throw new GraphQLError(
+                    "You are not the author of this message.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "message",
+                                    message:
+                                        "You are not the author of this message."
+                                }
+                            ]
+                        }
+                    }
+                );
+
+            if (content.length < 1 || content.length > 2000)
+                throw new GraphQLError(
+                    "Message must be between 1 and 2000 characters.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "message",
+                                    message:
+                                        "Message must be between 1 and 2000 characters."
+                                }
+                            ]
+                        }
+                    }
+                );
+
+            message.content = content;
+            message.edited = true;
+            await message.save();
+
+            // Send the message to the websocket
+
+            await pubSub.publish(MessageEvents.MessageEdited, {
+                messageEdited: message
+            });
+
+            return message;
+        },
         deleteMessage: async (
             _: any,
             {
@@ -252,6 +359,23 @@ export default {
                     return (
                         messageCreated.server === serverId &&
                         messageCreated.channel === channelId
+                    );
+                }
+            )
+        },
+        messageEdited: {
+            subscribe: withFilter(
+                () => pubSub.asyncIterator(MessageEvents.MessageEdited),
+                async (
+                    { messageEdited },
+                    {
+                        serverId,
+                        channelId
+                    }: { serverId: string; channelId: string }
+                ) => {
+                    return (
+                        messageEdited.server === serverId &&
+                        messageEdited.channel === channelId
                     );
                 }
             )
