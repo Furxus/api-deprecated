@@ -265,7 +265,8 @@ export default {
             const urls = extractUrls(content);
             const metadatas: urlMetadata.Result[] = [];
             for (const url of urls) {
-                const metadata = await urlMetadata(url);
+                const metadata = await urlMetadata(url).catch(() => null);
+                if (!metadata) continue;
                 metadatas.push(metadata);
             }
 
@@ -289,7 +290,6 @@ export default {
             await message.save();
 
             // Send the message to the websocket
-
             await pubSub.publish(MessageEvents.MessageEdited, {
                 messageEdited: message
             });
