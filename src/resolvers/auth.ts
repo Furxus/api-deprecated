@@ -310,6 +310,9 @@ export default {
                     }
                 });
 
+            user.activity!.lastActive = new Date();
+            user.activity!.lastLoginTimestamp = Date.now();
+
             return {
                 token: encrypt(user.generateToken()),
                 ...user.toJSON()

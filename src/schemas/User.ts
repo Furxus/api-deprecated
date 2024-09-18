@@ -56,6 +56,12 @@ const userSchema = new Schema(
                 type: String,
                 default: null
             },
+            lastLogin: {
+                type: Date,
+            },
+            lastLoginTimestamp: {
+                type: Number
+            },
             lastActive: {
                 type: Date
             },

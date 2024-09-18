@@ -284,8 +284,10 @@ type EmbedFooter {
 }
 
 type Activity {
-    id: String!
+    status: String!
     text: String!
+    lastLogin: DateTime!
+    lastLoginTimestamp: Timestamp!
     lastActive: DateTime!
     lastActiveTimestamp: Timestamp!
 }
