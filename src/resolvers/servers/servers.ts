@@ -41,7 +41,7 @@ export default {
         // Get all the servers the user is in and sort them by the time they joined
         getUserServers: async (_: any, __: any, { user }: { user: User }) => {
             const member = (await MemberSchema.find({ user: user.id })).sort(
-                (a, b) => b.joinedTimestamp - a.joinedTimestamp
+                (a, b) => a.joinedTimestamp - b.joinedTimestamp
             );
 
             return await ServerSchema.find({
