@@ -81,6 +81,7 @@ export default {
     },
     Query: {
         apiStatus: () => true,
+        ...auth.Query,
         ...servers.Query,
         ...users.Query,
         ...channels.Query,

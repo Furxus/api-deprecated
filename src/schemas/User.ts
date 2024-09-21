@@ -58,15 +58,19 @@ const userSchema = new Schema(
             },
             lastLogin: {
                 type: Date,
+                default: null
             },
             lastLoginTimestamp: {
-                type: Number
+                type: Number,
+                default: null
             },
             lastActive: {
-                type: Date
+                type: Date,
+                default: null
             },
             lastActiveTimestamp: {
-                type: Number
+                type: Number,
+                default: null
             }
         },
         bio: {
@@ -92,6 +96,10 @@ const userSchema = new Schema(
         createdTimestamp: {
             type: Number,
             required: true
+        },
+        verified: {
+            type: Boolean,
+            default: false
         },
         updatedAt: Date,
         updatedTimestamp: Number,

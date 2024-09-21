@@ -1,4 +1,3 @@
-import UserModel from "../schemas/User";
 import { validateLogin, validateRegister } from "../Validation";
 import bcrypt from "bcrypt";
 import moment from "moment";
@@ -8,8 +7,11 @@ import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
 import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
-import { genSnowflake } from "struct/Server";
+import { genSnowflake, mailgun } from "struct/Server";
 import Auth from "struct/Auth";
+
+import UserModel from "../schemas/User";
+import VerificationModel from "../schemas/Verification";
 import { User } from "@furxus/types";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -31,6 +33,93 @@ type LoginInput = {
 };
 
 export default {
+    Query: {
+        verifyUser: async (_: any, { code }: { code: string }) => {
+            // Find the verification document in the database
+            const verification = await VerificationModel.findOne({
+                code
+            });
+
+            if (!verification)
+                throw new GraphQLError("Invalid verification code", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "code",
+                                message: "Invalid verification code"
+                            }
+                        ]
+                    }
+                });
+
+            // Find the user in the database
+            const user = await UserModel.findOne({
+                id: verification.user
+            });
+
+            if (!user)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            // Check if the verification has expired
+            if (moment().isAfter(verification.expiresAt)) {
+                await verification.deleteOne();
+
+                const code = crypto.randomBytes(6).toString("hex");
+                const newVerification = new VerificationModel({
+                    id: genSnowflake(),
+                    user: user.id,
+                    code,
+                    expiresAt: moment().add(1, "day").toDate(),
+                    expiresTimestamp: moment().add(1, "day").unix()
+                });
+
+                const verificationUrl = `${process.env.FRONTEND_URL}/verify/${newVerification.code}`;
+
+                await mailgun.messages.create("furxus.com", {
+                    from: "verify@furxus.com",
+                    to: user.email,
+                    subject: "Furxus - Verify your email",
+                    template: "email verification template",
+                    "h:X-Mailgun-Variables": JSON.stringify({
+                        verification_url: verificationUrl
+                    })
+                });
+
+                await newVerification.save();
+
+                throw new GraphQLError(
+                    "Verification code has expired, we are going to send you a new one",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "code",
+                                    message:
+                                        "Verification code has expired, we are going to send you a new one"
+                                }
+                            ]
+                        }
+                    }
+                );
+            }
+
+            // Verify the user
+            user.verified = true;
+            await user.save();
+            await verification.deleteOne();
+
+            return true;
+        }
+    },
     Mutation: {
         registerUser: async (_: any, { input }: { input: RegisterInput }) => {
             // Grab inputs from the request
@@ -201,7 +290,31 @@ export default {
                 userRoles: ["alpha-user"]
             });
 
+            const code = crypto.randomBytes(6).toString("hex");
+
+            // Create a verification document
+            const verification = new VerificationModel({
+                id: genSnowflake(),
+                user: user.id,
+                code,
+                expiresAt: moment().add(1, "day").toDate(),
+                expiresTimestamp: moment().add(1, "day").unix()
+            });
+
+            const verificationUrl = `${process.env.FRONTEND_URL}/verify/${verification.code}`;
+
+            await mailgun.messages.create("furxus.com", {
+                from: "verify@furxus.com",
+                to: user.email,
+                subject: "Furxus - Verify your email",
+                template: "email verification template",
+                "h:X-Mailgun-Variables": JSON.stringify({
+                    verification_url: verificationUrl
+                })
+            });
+
             await user.save();
+            await verification.save();
 
             return true;
         },
@@ -310,8 +423,7 @@ export default {
                     }
                 });
 
-            user.activity!.lastActive = new Date();
-            user.activity!.lastLoginTimestamp = Date.now();
+            await user.save();
 
             return {
                 token: encrypt(user.generateToken()),
@@ -354,26 +466,55 @@ export default {
                 ...user.toJSON()
             };
         },
-        updateAuthUser: async (
-            _: any,
-            { fields }: { fields: any },
-            { user }: { user: User }
-        ) => {
-            const userDoc = await UserModel.findOne({
+        resendEmail: async (_: any, __: any, { user }: { user: User }) => {
+            // Delete the old verification document (if it exists)
+
+            const dbUser = await UserModel.findOne({
                 id: user.id
             });
 
-            if (!userDoc)
+            if (!dbUser)
                 throw new GraphQLError("User not found", {
                     extensions: {
                         errors: [
                             {
-                                type: "id",
+                                type: "user",
                                 message: "User not found"
                             }
                         ]
                     }
                 });
+
+            await VerificationModel.deleteOne({
+                user: user.id
+            });
+
+            // Create a new verification document
+            const code = crypto.randomBytes(6).toString("hex");
+
+            const verification = new VerificationModel({
+                id: genSnowflake(),
+                user: user.id,
+                code,
+                expiresAt: moment().add(1, "day").toDate(),
+                expiresTimestamp: moment().add(1, "day").unix()
+            });
+
+            const verificationUrl = `${process.env.FRONTEND_URL}/verify/${verification.code}`;
+
+            await mailgun.messages.create("furxus.com", {
+                from: "verify@furxus.com",
+                to: dbUser.email,
+                subject: "Furxus - Verify your email",
+                template: "email verification template",
+                "h:X-Mailgun-Variables": JSON.stringify({
+                    verification_url: verificationUrl
+                })
+            });
+
+            await verification.save();
+
+            return true;
         }
     }
 };

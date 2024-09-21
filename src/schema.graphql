@@ -114,6 +114,7 @@ type User {
     dateOfBirth: Date
     avatar: String
     defaultAvatar: String!
+    verified: Boolean!
     banner: String
     displayName: String
     nameAcronym: String!
@@ -285,7 +286,7 @@ type EmbedFooter {
 
 type Activity {
     status: String!
-    text: String!
+    text: String
     lastLogin: DateTime!
     lastLoginTimestamp: Timestamp!
     lastActive: DateTime!
@@ -351,7 +352,7 @@ type Mutation {
     registerUser(input: RegisterInput!): Boolean!
     loginUser(input: LoginInput!): Auth!
     refreshUser(token: String!): Auth!
-    updateAuthUser(input: [UpdateUserInput!]!): User!
+    resendEmail: Boolean!
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
@@ -470,6 +471,7 @@ type Query {
     # User Queries
     getUser(id: String!): User!
     getUsers: [User]!
+    verifyUser(code: String!): Boolean!
 
     # Server Queries
     getServer(id: String!): Server!
