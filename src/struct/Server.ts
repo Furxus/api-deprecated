@@ -27,6 +27,7 @@ import { Snowflake } from "@theinternetfolks/snowflake";
 import { threadId } from "worker_threads";
 import Mailgun from "mailgun.js";
 import formData from "form-data";
+import ColorThief from "color-thief-ts";
 
 const port = process.env.PORT || 1125;
 const app = express();
@@ -105,7 +106,9 @@ const mailgun = mailgunInstance.client({
     username: "api"
 });
 
-export { pubSub, genSnowflake, mailgun };
+const colorThief = new ColorThief();
+
+export { colorThief, pubSub, genSnowflake, mailgun };
 
 export default class Server extends ApolloServer {
     readonly database: Database;

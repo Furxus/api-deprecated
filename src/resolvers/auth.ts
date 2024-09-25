@@ -7,12 +7,13 @@ import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
 import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
-import { genSnowflake, mailgun } from "struct/Server";
+import { colorThief, genSnowflake, mailgun } from "struct/Server";
 import Auth from "struct/Auth";
 
 import UserModel from "../schemas/User";
 import VerificationModel from "../schemas/Verification";
 import { User } from "@furxus/types";
+import logger from "struct/Logger";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -274,6 +275,9 @@ export default {
             const imageUrl = asset.getObjectPublicUrls(
                 `defaultAvatar/${randomSpecies}.png`
             );
+            const accentColor = await colorThief.getColorAsync(imageUrl[0], {
+                colorType: "hex"
+            });
 
             // Create user (since the app is in alpha phase, we give them a special role)
             const user = new UserModel({
@@ -283,6 +287,7 @@ export default {
                 displayName: value.displayName,
                 password: newPass,
                 defaultAvatar: imageUrl[0],
+                accentColor,
                 privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
@@ -464,6 +469,85 @@ export default {
             return {
                 token: encrypt(user.generateToken()),
                 ...user.toJSON()
+            };
+        },
+        updateUserAvatar: async (
+            _: any,
+            { avatar }: { avatar: any },
+            { user }: { user: User }
+        ) => {
+            let avatarFile = null;
+            try {
+                if (avatar) {
+                    avatarFile = await avatar;
+                }
+            } catch (error) {
+                logger.error(error);
+                throw new GraphQLError(
+                    "An error occurred while uploading the icon.",
+                    {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "icon",
+                                    message:
+                                        "An error occurred while uploading the icon."
+                                }
+                            ]
+                        }
+                    }
+                );
+            }
+
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            if (avatarFile) {
+                const stream = avatarFile.createReadStream();
+                let avatarUrl;
+                if (avatarFile.mimetype.includes("gif")) {
+                    avatarUrl = await asset.uploadStream(
+                        stream,
+                        `avatars/${user.id}/a_${genSnowflake()}.gif`,
+                        avatarFile.mimetype
+                    );
+                } else {
+                    avatarUrl = await asset.uploadStream(
+                        stream,
+                        `avatars/${user.id}/${genSnowflake()}.png`,
+                        avatarFile.mimetype
+                    );
+                }
+
+                if (avatarUrl) {
+                    userDoc.avatar = avatarUrl.publicUrls[0];
+                    const dominantColor = await colorThief.getColorAsync(
+                        userDoc.avatar,
+                        { colorType: "hex" }
+                    );
+
+                    userDoc.accentColor = dominantColor;
+                }
+            }
+
+            await userDoc.save();
+
+            return {
+                token: encrypt(userDoc.generateToken()),
+                ...userDoc.toJSON()
             };
         },
         resendEmail: async (_: any, __: any, { user }: { user: User }) => {
