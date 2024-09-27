@@ -471,7 +471,12 @@ export default {
                 ...user.toJSON()
             };
         },
-        updateUserAvatar: async (
+        updateDefaultAvatar: async (
+            _: any,
+            { avatar }: { avatar: string },
+            { user }: { user: User }
+        ) => {},
+        updateAvatar: async (
             _: any,
             { avatar }: { avatar: any },
             { user }: { user: User }
