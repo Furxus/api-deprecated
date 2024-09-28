@@ -14,6 +14,7 @@ import UserModel from "../schemas/User";
 import VerificationModel from "../schemas/Verification";
 import { User } from "@furxus/types";
 import logger from "struct/Logger";
+import { genRandColor } from "struct/Util";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -275,9 +276,14 @@ export default {
             const imageUrl = asset.getObjectPublicUrls(
                 `defaultAvatar/${randomSpecies}.png`
             );
-            const accentColor = await colorThief.getColorAsync(imageUrl[0], {
-                colorType: "hex"
-            });
+            let { dominantColor }: any = await colorThief.getColorAsync(
+                imageUrl[0],
+                { colorType: "hex" }
+            );
+
+            if (!dominantColor) {
+                dominantColor = genRandColor();
+            }
 
             // Create user (since the app is in alpha phase, we give them a special role)
             const user = new UserModel({
@@ -287,7 +293,7 @@ export default {
                 displayName: value.displayName,
                 password: newPass,
                 defaultAvatar: imageUrl[0],
-                accentColor,
+                accentColor: dominantColor,
                 privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
@@ -475,7 +481,54 @@ export default {
             _: any,
             { avatar }: { avatar: string },
             { user }: { user: User }
-        ) => {},
+        ) => {
+            if (!species.includes(avatar))
+                throw new GraphQLError("Default Avatar doesn't exist", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "avatar",
+                                message: "Default Avatar doesn't exist"
+                            }
+                        ]
+                    }
+                });
+
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            const imageUrl = asset.getObjectPublicUrls(
+                `defaultAvatar/${avatar}.png`
+            );
+
+            let { dominantColor }: any = await colorThief.getColorAsync(
+                imageUrl[0],
+                { colorType: "hex" }
+            );
+
+            if (!dominantColor) {
+                dominantColor = genRandColor();
+            }
+
+            userDoc.defaultAvatar = imageUrl[0];
+            userDoc.accentColor = dominantColor;
+
+            await userDoc.save();
+            return true;
+        },
         updateAvatar: async (
             _: any,
             { avatar }: { avatar: any },
@@ -539,21 +592,22 @@ export default {
 
                 if (avatarUrl) {
                     userDoc.avatar = avatarUrl.publicUrls[0];
-                    const dominantColor = await colorThief.getColorAsync(
+                    // Types for this module is incorrect so for now we are gonna use any
+                    let { dominantColor }: any = await colorThief.getColorAsync(
                         userDoc.avatar,
                         { colorType: "hex" }
                     );
+
+                    if (!dominantColor) {
+                        dominantColor = genRandColor();
+                    }
 
                     userDoc.accentColor = dominantColor;
                 }
             }
 
             await userDoc.save();
-
-            return {
-                token: encrypt(userDoc.generateToken()),
-                ...userDoc.toJSON()
-            };
+            return true;
         },
         resendEmail: async (_: any, __: any, { user }: { user: User }) => {
             // Delete the old verification document (if it exists)

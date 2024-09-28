@@ -355,8 +355,8 @@ type Mutation {
     resendEmail: Boolean!
 
     # Updating User Data
-    updateAvatar(avatar: Upload!): Auth!
-    updateDefaultAvatar(avatar: String!): Auth!
+    updateAvatar(avatar: Upload!): Boolean!
+    updateDefaultAvatar(avatar: String!): Boolean!
 
     # Server Mutations
     createServer(name: String!, icon: Upload): Server!
