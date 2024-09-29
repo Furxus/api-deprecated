@@ -18,7 +18,16 @@ import { genRandColor } from "struct/Util";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-const species = ["dog", "dragon", "fox", "hyena", "rabbit", "raccoon", "wolf"];
+const species = [
+    "cat",
+    "dog",
+    "dragon",
+    "fox",
+    "hyena",
+    "rabbit",
+    "raccoon",
+    "wolf"
+];
 
 type RegisterInput = {
     username: string;
@@ -523,7 +532,7 @@ export default {
                 dominantColor = genRandColor();
             }
 
-            userDoc.defaultAvatar = imageUrl[0];
+            userDoc.avatar = imageUrl[0];
             userDoc.accentColor = dominantColor;
 
             await userDoc.save();
