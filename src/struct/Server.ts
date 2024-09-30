@@ -90,16 +90,15 @@ let pubSub: PubSub | MongodbPubSub = new PubSub();
 if (process.env.NODE_ENV !== "development") {
     pubSub = new MongodbPubSub({
         connectionDb: new Db(
-            new MongoClient(process.env.DATABASE ?? ""),
+            new MongoClient(process.env.DATABASE ?? "", {
+                connectTimeoutMS: 1000000000,
+                socketTimeoutMS: 1000000000
+            }),
             "furxus",
             {
                 retryWrites: true
             }
-        ),
-        channelOptions: {
-            size: 100000000000000,
-            max: 100000000000000
-        }
+        )
     });
 }
 
