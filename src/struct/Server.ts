@@ -6,7 +6,7 @@ import gql from "graphql-tag";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import resolvers from "../resolvers";
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import Database from "./Database";
 import logger from "./Logger";
 import inheritDirective from "graphql-inherits";
@@ -35,9 +35,9 @@ const app = express();
 const httpServer = createServer(app);
 
 const typeDefs = gql(
-    readFileSync("src/schema.graphql", {
-        encoding: "utf-8"
-    })
+    readdirSync("src/gql")
+        .map((file) => readFileSync(`src/gql/${file}`, { encoding: "utf-8" }))
+        .join("\n")
 );
 
 const wsServer = new WebSocketServer({
@@ -91,7 +91,10 @@ if (process.env.NODE_ENV !== "development") {
     pubSub = new MongodbPubSub({
         connectionDb: new Db(
             new MongoClient(process.env.DATABASE ?? ""),
-            "furxus"
+            "furxus",
+            {
+                retryWrites: true
+            }
         ),
         channelOptions: {
             size: 100000000000000,
