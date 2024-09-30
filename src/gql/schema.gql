@@ -1,0 +1,245 @@
+"""
+All scalar types are from the graphql-scalars package
+"""
+scalar Date
+scalar Time
+scalar DateTime
+scalar DateTimeISO
+scalar TimeZone
+scalar Timestamp
+scalar UtcOffset
+scalar Duration
+scalar ISO8601Duration
+scalar LocalDate
+scalar LocalTime
+scalar LocalDateTime
+scalar LocalEndTime
+scalar EmailAddress
+scalar NegativeFloat
+scalar NegativeInt
+scalar NonEmptyString
+scalar NonNegativeFloat
+scalar NonNegativeInt
+scalar NonPositiveFloat
+scalar NonPositiveInt
+scalar PhoneNumber
+scalar PositiveFloat
+scalar PositiveInt
+scalar PostalCode
+scalar UnsignedFloat
+scalar UnsignedInt
+scalar URL
+scalar BigInt
+scalar Byte
+scalar Long
+scalar SafeInt
+scalar UUID
+scalar GUID
+scalar Hexadecimal
+scalar HexColorCode
+scalar HSL
+scalar HSLA
+scalar IP
+scalar IPv4
+scalar IPv6
+scalar ISBN
+scalar JWT
+scalar Latitude
+scalar Longitude
+scalar MAC
+scalar Port
+scalar RGB
+scalar RGBA
+scalar USCurrency
+scalar JSON
+scalar JSONObject
+scalar ObjectID
+scalar Void
+scalar Currency
+scalar IBAN
+scalar DID
+scalar CountryCode
+scalar Locale
+scalar RoutingNumber
+scalar AccountNumber
+scalar Cuid
+scalar SemVer
+scalar SESSN
+scalar DeweyDecimal
+scalar LCCSubclass
+scalar IPCPatent
+scalar Any
+
+scalar Upload
+
+"""
+Directive for inheriting fields from another type
+"""
+directive @inherits(type: String!) on OBJECT | INPUT_OBJECT
+
+input RegisterInput {
+    username: String!
+    email: String!
+    displayName: String
+    password: String!
+    confirmPassword: String!
+    dateOfBirth: String!
+}
+
+input LoginInput {
+    usernameOrEmail: String!
+    password: String!
+}
+
+type PostContent {
+    text: String
+    image: String
+    video: String
+    audio: String
+}
+
+input PostContentInput {
+    text: String
+    media: Upload
+}
+
+"""
+User type contains all data related to a user (some not implemented yet)
+"""
+type User {
+    id: String!
+    username: String!
+    email: EmailAddress
+    age: Int
+    dateOfBirth: Date
+    avatar: String
+    defaultAvatar: String!
+    verified: Boolean!
+    banner: String
+    displayName: String
+    nameAcronym: String!
+    activity: Activity!
+    bio: String
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    preferences: Preferences!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+    servers: [Server]!
+    friends: [User]!
+    friendRequests: [User]!
+    posts: [Post]!
+    comments: [Comment]!
+    blocks: [User]!
+    blockedBy: [User]!
+    followers: [User]!
+    following: [User]!
+    favorites: [Post]!
+    likes: [Post]!
+    reports: [Report]!
+    shares: [Post]!
+    views: Int!
+    type: [String]!
+}
+
+type Preferences {
+    mode: String!
+    theme: String!
+}
+
+type Activity {
+    status: String!
+    text: String
+    lastLogin: DateTime!
+    lastLoginTimestamp: Timestamp!
+    lastActive: DateTime!
+    lastActiveTimestamp: Timestamp!
+}
+
+type Report {
+    id: String!
+    user: User!
+    reason: String!
+    post: Post
+    comment: Comment
+    server: Server
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Auth @inherits(type: "User") {
+    token: String!
+}
+
+input UpdateUserInput {
+    field: String!
+    value: Any!
+}
+
+type Mutation {
+    registerUser(input: RegisterInput!): Boolean!
+    loginUser(input: LoginInput!): Auth!
+    refreshUser(token: String!): Auth!
+    resendEmail: Boolean!
+
+    # Updating User Data
+    updateAvatar(avatar: Upload!): Boolean!
+    updateDefaultAvatar(avatar: String!): Boolean!
+
+    # User Mutations
+    updateUser(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): User!
+
+    # Activity Mutations
+    updateActivity(userId: String!, status: String, text: String): Activity!
+
+    # Follow Mutations
+    followUser(userId: String!): Boolean!
+    unfollowUser(userId: String!): Boolean!
+
+    # Block Mutations
+    blockUser(userId: String!): Boolean!
+    unblockUser(userId: String!): Boolean!
+
+    # Report Mutations
+    reportUser(userId: String!): Boolean!
+    reportPost(postId: String!): Boolean!
+    reportComment(commentId: String!): Boolean!
+
+    # TODO Notification Mutations
+}
+
+type Query {
+    # For checking if the API is online
+    apiStatus: Boolean
+
+    # User Queries
+    getUser(id: String!): User!
+    getUsers: [User]!
+    verifyUser(code: String!): Boolean!
+
+    # Activity Queries
+    getActivity(userId: String!): Activity!
+
+    # Follow Queries
+    getFollowers(userId: String!): [User]!
+    getFollowing(userId: String!): [User]!
+
+    # Block Queries
+    getBlockedUsers(userId: String!): [User]!
+
+    # Report Queries
+    getReports: [Report]!
+
+    # Auth Queries
+    me: User!
+}
+
+type Subscription {
+    userCreated: User!
+}

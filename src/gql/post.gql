@@ -1,0 +1,101 @@
+type Likes {
+    privacy: String!
+    posts: [Post]!
+}
+
+type Favorites {
+    privacy: String!
+    posts: [Post]!
+}
+
+type Post {
+    id: String!
+    content: PostContent!
+    hashtags: [String]!
+    mentions: [String]!
+    user: User!
+    nsfw: Boolean!
+    comments: [Comment]!
+    likes: [User]!
+    reports: [Report]!
+    favorites: [User]!
+    shares: [User]!
+    views: Int!
+    isPinned: Boolean!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type Comment {
+    id: String!
+    content: String!
+    post: Post!
+    user: User!
+    likes: [User]!
+    reports: [Report]!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+extend type Query {
+    # Post Queries
+    getPost(id: String!): Post!
+    getPosts: [Post!]
+    getPaginatedPosts(offset: Int!): [Post!]!
+
+    # Comment Queries
+    getComment(id: String!): Comment!
+    getComments(postId: String!): [Comment]!
+    getPaginatedComments(postId: String!, offset: Int!): [Comment]!
+    getCommentCount(postId: String!): Int!
+
+    # Like Queries
+    getLikes(postId: String!): [User]!
+    getLikeCount(postId: String!): Int!
+}
+
+extend type Mutation {
+    # Post Mutations
+    createPost(
+        content: PostContentInput!
+        hashtags: [String!]
+        mentions: [String!]
+        nsfw: Boolean
+    ): Post!
+    updatePost(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Post!
+    deletePost(id: String!): Boolean!
+
+    # Comment Mutations
+    createComment(postId: String!, content: String!): Comment!
+    updateComment(
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Comment!
+    deleteComment(id: String!): Boolean!
+
+    # Like Mutations
+    likePost(postId: String!): Post!
+    likeComment(commentId: String!): Post!
+    unlikePost(postId: String!): Post!
+    unlikeComment(commentId: String!): Post!
+}
+
+extend type Subscription {
+    # Post Subscriptions
+    postCreated: Post!
+    postDeleted: Post!
+    postLiked: Post!
+    postUnliked: Post!
+
+    # Comment Subscriptions
+    commentCreated: Comment!
+}
