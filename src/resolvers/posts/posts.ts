@@ -17,7 +17,7 @@ export default {
     Query: {
         getPosts: async () =>
             (await PostSchema.find()).toSorted(
-                (a, b) => a.createdTimestamp - b.createdTimestamp
+                (a, b) => b.createdTimestamp - a.createdTimestamp
             ),
 
         getPaginatedPosts: async (
@@ -25,7 +25,7 @@ export default {
             { offset, limit = 10 }: { offset: number; limit?: number }
         ) => {
             const posts = (await PostSchema.find()).toSorted(
-                (a, b) => a.createdTimestamp - b.createdTimestamp
+                (a, b) => b.createdTimestamp - a.createdTimestamp
             );
 
             if (!posts) return [];
