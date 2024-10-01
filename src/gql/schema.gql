@@ -241,5 +241,5 @@ type Query {
 }
 
 type Subscription {
-    userCreated: User!
+    userUpdated: User!
 }

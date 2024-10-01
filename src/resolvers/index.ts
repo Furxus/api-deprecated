@@ -1,6 +1,6 @@
 import { resolvers as scalarResolvers } from "graphql-scalars";
 import { GraphQLUpload } from "graphql-upload-ts";
-import users from "./servers/users";
+import users from "./users";
 import servers from "./servers/servers";
 import auth from "./auth";
 import UserSchema from "schemas/User";
@@ -101,6 +101,7 @@ export default {
         ...servers.Subscription,
         ...channels.Subscription,
         ...messages.Subscription,
-        ...posts.Subscription
+        ...posts.Subscription,
+        ...users.Subscription
     }
 };

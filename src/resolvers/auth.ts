@@ -7,7 +7,7 @@ import { decrypt, encrypt } from "../struct/Crypt";
 import { GraphQLError } from "graphql";
 import Cryptr from "cryptr";
 import asset from "struct/AssetManagement";
-import { colorThief, genSnowflake, mailgun } from "struct/Server";
+import { colorThief, genSnowflake, mailgun, pubSub } from "struct/Server";
 import Auth from "struct/Auth";
 
 import UserModel from "../schemas/User";
@@ -15,6 +15,7 @@ import VerificationModel from "../schemas/Verification";
 import { User } from "@furxus/types";
 import logger from "struct/Logger";
 import { genRandColor } from "struct/Util";
+import { UserEvents } from "./users";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -536,6 +537,11 @@ export default {
             userDoc.accentColor = dominantColor;
 
             await userDoc.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
             return true;
         },
         updateAvatar: async (
@@ -616,6 +622,11 @@ export default {
             }
 
             await userDoc.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
             return true;
         },
         resendEmail: async (_: any, __: any, { user }: { user: User }) => {
