@@ -137,7 +137,9 @@ export default {
                     author: {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
-                        iconUrl: metadata.favicons[0]?.href
+                        iconUrl: !metadata.favicons[0]?.href.startsWith("/")
+                            ? metadata.favicons[0]?.href ?? null
+                            : null
                     }
                 });
             }
@@ -280,7 +282,9 @@ export default {
                     author: {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
-                        iconUrl: metadata.favicons[0]?.href
+                        iconUrl: !metadata.favicons[0].startsWith("/")
+                            ? metadata.favicons[0]?.href ?? null
+                            : null
                     }
                 });
             }
