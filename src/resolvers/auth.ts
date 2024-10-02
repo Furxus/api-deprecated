@@ -130,6 +130,29 @@ export default {
             await verification.deleteOne();
 
             return true;
+        },
+        getPreviousAvatars: async (
+            _: any,
+            __: any,
+            { user }: { user: User }
+        ) => {
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            return userDoc.previousAvatars;
         }
     },
     Mutation: {
@@ -588,19 +611,41 @@ export default {
                     }
                 });
 
+            if (userDoc.avatar) {
+                userDoc.previousAvatars.push(userDoc.avatar);
+                if (userDoc.previousAvatars.length > 8) {
+                    const removedAvatar = userDoc.previousAvatars.shift();
+                    if (removedAvatar) {
+                        await asset.deleteObject(
+                            `avatars/${user.id}/${removedAvatar}`
+                        );
+                    }
+                }
+            }
+
             if (avatarFile) {
                 const stream = avatarFile.createReadStream();
                 let avatarUrl;
                 if (avatarFile.mimetype.includes("gif")) {
+                    const avatarSnowflake = genSnowflake();
+
                     avatarUrl = await asset.uploadStream(
                         stream,
-                        `avatars/${user.id}/a_${genSnowflake()}.gif`,
+                        `avatars/${user.id}/a_${avatarSnowflake}.gif`,
+                        {},
                         avatarFile.mimetype
+                    );
+                    await asset.uploadStream(
+                        stream,
+                        `avatars/${user.id}/${avatarSnowflake}.png`,
+                        {},
+                        "image/png"
                     );
                 } else {
                     avatarUrl = await asset.uploadStream(
                         stream,
                         `avatars/${user.id}/${genSnowflake()}.png`,
+                        {},
                         avatarFile.mimetype
                     );
                 }
@@ -620,6 +665,59 @@ export default {
                     userDoc.accentColor = dominantColor;
                 }
             }
+
+            await userDoc.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
+            return true;
+        },
+        updateAvatarFromURL: async (
+            _: any,
+            { avatar }: { avatar: string },
+            { user }: { user: User }
+        ) => {
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            if (userDoc.avatar) {
+                userDoc.previousAvatars.push(userDoc.avatar);
+                if (userDoc.previousAvatars.length > 8) {
+                    const removedAvatar = userDoc.previousAvatars.shift();
+                    if (removedAvatar) {
+                        await asset.deleteObject(
+                            `avatars/${user.id}/${removedAvatar}`
+                        );
+                    }
+                }
+            }
+
+            userDoc.avatar = avatar;
+            let { dominantColor }: any = await colorThief.getColorAsync(
+                avatar,
+                { colorType: "hex" }
+            );
+
+            if (!dominantColor) {
+                dominantColor = genRandColor();
+            }
+
+            userDoc.accentColor = dominantColor;
 
             await userDoc.save();
 

@@ -35,6 +35,10 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
+        previousAvatars: {
+            type: [String],
+            default: []
+        },
         banner: {
             type: String,
             default: null

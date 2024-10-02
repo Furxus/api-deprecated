@@ -187,6 +187,7 @@ type Mutation {
     # Updating User Data
     updateAvatar(avatar: Upload!): Boolean!
     updateDefaultAvatar(avatar: String!): Boolean!
+    updateAvatarFromURL(avatar: String!): Boolean!
 
     # User Mutations
     updateUser(
@@ -222,6 +223,7 @@ type Query {
     getUser(id: String!): User!
     getUsers: [User]!
     verifyUser(code: String!): Boolean!
+    getPreviousAvatars: [String]!
 
     # Activity Queries
     getActivity(userId: String!): Activity!
