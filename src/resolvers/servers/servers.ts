@@ -292,6 +292,49 @@ export default {
                     }
                 );
 
+            // Find the invite
+            const invite = server.invites.find((i) => i.code === code);
+            if (!invite)
+                throw new GraphQLError("Invalid invite code.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "code",
+                                message: "Invalid invite code."
+                            }
+                        ]
+                    }
+                });
+
+            // Check if the invite has expired
+            if (invite.expiresTimestamp && invite.expiresTimestamp < Date.now())
+                throw new GraphQLError("Invite has expired.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "code",
+                                message: "Invite has expired."
+                            }
+                        ]
+                    }
+                });
+
+            // Check if the invite has reached its maximum uses
+            if (invite.maxUses && invite.uses >= invite.maxUses)
+                throw new GraphQLError("Invite has reached its maximum uses.", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "code",
+                                message: "Invite has reached its maximum uses."
+                            }
+                        ]
+                    }
+                });
+
+            // Increment the invite uses
+            invite.uses++;
+
             // Create the member
             const member = new MemberSchema({
                 id: user.id,
@@ -304,6 +347,8 @@ export default {
             await member.save();
 
             server.members.push(member.id);
+            server.markModified("members");
+            server.markModified("invites");
             await server.save();
 
             // Send the server join to the websocket
