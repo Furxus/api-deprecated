@@ -29,7 +29,8 @@ const userSchema = new Schema(
         },
         avatar: {
             type: String,
-            default: null
+            default: null,
+            required: false
         },
         defaultAvatar: {
             type: String,
@@ -41,7 +42,8 @@ const userSchema = new Schema(
         },
         banner: {
             type: String,
-            default: null
+            default: null,
+            required: false
         },
         accentColor: {
             type: String,
@@ -49,11 +51,13 @@ const userSchema = new Schema(
         },
         displayName: {
             type: String,
-            default: null
+            default: null,
+            required: false
         },
         nameAcronym: {
             type: String,
-            default: null
+            default: null,
+            required: false
         },
         activity: {
             status: {
@@ -62,28 +66,34 @@ const userSchema = new Schema(
             },
             text: {
                 type: String,
-                default: null
+                default: null,
+                required: false
             },
             lastLogin: {
                 type: Date,
-                default: null
+                default: null,
+                required: false
             },
             lastLoginTimestamp: {
                 type: Number,
-                default: null
+                default: null,
+                required: false
             },
             lastActive: {
                 type: Date,
-                default: null
+                default: null,
+                required: false
             },
             lastActiveTimestamp: {
                 type: Number,
-                default: null
+                default: null,
+                required: false
             }
         },
         bio: {
             type: String,
-            default: null
+            default: null,
+            required: false
         },
         badges: {
             type: [String],

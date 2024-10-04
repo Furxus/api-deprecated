@@ -556,7 +556,8 @@ export default {
                 dominantColor = genRandColor();
             }
 
-            userDoc.avatar = imageUrl[0];
+            userDoc.avatar = null;
+            userDoc.defaultAvatar = imageUrl[0];
             userDoc.accentColor = dominantColor;
 
             await userDoc.save();
