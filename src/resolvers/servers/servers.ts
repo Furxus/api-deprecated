@@ -44,7 +44,7 @@ export default {
                 (a, b) => a.joinedTimestamp - b.joinedTimestamp
             );
 
-            return await ServerSchema.find({
+            return ServerSchema.find({
                 id: { $in: member.map((m) => m.server) }
             });
         },
@@ -64,68 +64,6 @@ export default {
                 });
 
             return server;
-        },
-        // Get the settings of a server
-        getServerSettings: async (
-            _: any,
-            { id }: { id: string },
-            { user }: { user: User }
-        ) => {
-            // Find the servers
-            const server = await ServerSchema.findOne({ id });
-            if (!server)
-                throw new GraphQLError("Server not found.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "Server not found."
-                            }
-                        ]
-                    }
-                });
-
-            // Find the member
-            const member = await MemberSchema.findOne({
-                server: server.id,
-                user: user.id
-            });
-
-            if (!member)
-                throw new GraphQLError("You are not a member of this server.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "You are not a member of this server."
-                            }
-                        ]
-                    }
-                });
-
-            const { permissions } = member;
-
-            const settings: ServerSettings = {
-                roles: null,
-                channels: null,
-                invites: null
-            };
-
-            // Check user's appropriate permissions
-            if (!permissions.includes("Administrator")) {
-                if (permissions.includes("ManageRoles"))
-                    settings.roles = server.roles;
-                if (permissions.includes("ManageChannels"))
-                    settings.channels = server.channels;
-                if (permissions.includes("ManageInvites"))
-                    settings.invites = server.invites;
-            } else {
-                settings.roles = server.roles;
-                settings.channels = server.channels;
-                settings.invites = server.invites;
-            }
-
-            return settings;
         }
     },
     Mutation: {
