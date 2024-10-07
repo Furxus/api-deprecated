@@ -14,8 +14,9 @@ import UserModel from "../schemas/User";
 import VerificationModel from "../schemas/Verification";
 import { User } from "@furxus/types";
 import logger from "struct/Logger";
-import { genRandColor } from "struct/Util";
+import { genRandColor, imageToBuffer } from "struct/Util";
 import { UserEvents } from "./users";
+import sharp from "sharp";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
@@ -636,8 +637,12 @@ export default {
                         {},
                         avatarFile.mimetype
                     );
+
+                    const buffer = await imageToBuffer(avatarUrl.publicUrls[0]);
+                    const pngStream = await sharp(buffer).png().toBuffer();
+
                     await asset.uploadStream(
-                        stream,
+                        pngStream,
                         `avatars/${user.id}/${avatarSnowflake}.png`,
                         {},
                         "image/png"
