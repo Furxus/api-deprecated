@@ -130,7 +130,7 @@ export default {
             const embeds: MessageEmbed[] = [];
             for (const metadata of metadatas) {
                 const embed = {
-                    title: metadata["og:title"].split(",")[0],
+                    title: metadata["og:title"],
                     description: metadata["og:description"].replaceAll(
                         " ",
                         "\n"
@@ -142,7 +142,7 @@ export default {
                         metadata["og:video:url"] ??
                         null,
                     author: {
-                        name: metadata["og:site_name"],
+                        name: metadata["og:site_name"].split(",")[0],
                         url: metadata["og:url"],
                         iconUrl: !metadata.favicons[0]?.href.startsWith("/")
                             ? metadata.favicons[0]?.href ?? null
