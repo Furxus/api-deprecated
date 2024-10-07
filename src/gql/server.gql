@@ -105,6 +105,7 @@ type MessageEmbed {
     author: EmbedAuthor
     footer: EmbedFooter
     image: String
+    media: String
 }
 
 type MessageAttachment {

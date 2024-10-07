@@ -129,11 +129,18 @@ export default {
 
             const embeds: MessageEmbed[] = [];
             for (const metadata of metadatas) {
-                embeds.push({
-                    title: metadata["og:title"],
-                    description: metadata["og:description"],
+                const embed = {
+                    title: metadata["og:title"].split(",")[0],
+                    description: metadata["og:description"].replaceAll(
+                        " ",
+                        "\n"
+                    ),
                     url: metadata["og:url"],
                     image: metadata["og:image"],
+                    media:
+                        metadata["og:video:secure_url"] ??
+                        metadata["og:video:url"] ??
+                        null,
                     author: {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
@@ -141,7 +148,12 @@ export default {
                             ? metadata.favicons[0]?.href ?? null
                             : null
                     }
-                });
+                };
+
+                if (embed.url.includes("spotify")) {
+                    embed.media = `https://open.spotify.com/embed/track/${embed.url.split("/")[4]}`;
+                }
+                embeds.push(embed);
             }
 
             // Create the message
@@ -282,7 +294,7 @@ export default {
                     author: {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
-                        iconUrl: !metadata.favicons[0].startsWith("/")
+                        iconUrl: !metadata.favicons[0].href.startsWith("/")
                             ? metadata.favicons[0]?.href ?? null
                             : null
                     }
