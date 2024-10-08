@@ -123,7 +123,8 @@ export default {
             const urls = extractUrls(content);
             const metadatas: urlMetadata.Result[] = [];
             for (const url of urls) {
-                const metadata = await urlMetadata(url);
+                const metadata = await urlMetadata(url).catch(() => null);
+                if(!metadata) continue;
                 metadatas.push(metadata);
             }
 
