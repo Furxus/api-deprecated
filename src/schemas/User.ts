@@ -124,7 +124,10 @@ const userSchema = new Schema(
         followers: [String],
         following: [String],
         friends: [String],
-        friendRequests: [String],
+        friendRequests: {
+            sent: [String],
+            received: [String]
+        },
         blocks: [String],
         blockedBy: [String],
         privacy: {
@@ -155,7 +158,6 @@ const userSchema = new Schema(
                 default: "dark"
             }
         },
-        reports: [String],
         shares: [String],
         views: {
             type: Number,
