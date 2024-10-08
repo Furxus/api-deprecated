@@ -2,6 +2,7 @@ import { User } from "@furxus/types";
 import { GraphQLError } from "graphql";
 import UserSchema from "schemas/User";
 import FriendChannelSchema from "schemas/FriendChannel";
+import { genSnowflake } from "struct/Server";
 
 export default {
     Query: {
@@ -27,7 +28,26 @@ export default {
         getFriendChannels: async (_: any, __: any, { user }: { user: User }) =>
             FriendChannelSchema.find({
                 $in: { participants: user.id }
-            })
+            }),
+        getDMMessages: async (_: any, { channelId }: { channelId: string }) => {
+            const channel = await FriendChannelSchema.findOne({
+                id: channelId
+            });
+
+            if (!channel)
+                throw new GraphQLError("Channel not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "channel",
+                                message: "Channel not found"
+                            }
+                        ]
+                    }
+                });
+
+            return channel.messages;
+        }
     },
     Mutation: {
         sendFriendRequest: async (
@@ -56,12 +76,12 @@ export default {
             });
 
             if (!friendDoc)
-                throw new GraphQLError("Friend not found", {
+                throw new GraphQLError("User not found", {
                     extensions: {
                         errors: [
                             {
                                 type: "user",
-                                message: "Friend not found"
+                                message: "User not found"
                             }
                         ]
                     }
@@ -79,6 +99,18 @@ export default {
                     }
                 });
 
+            if (userDoc.friendRequests?.sent.includes(userId))
+                throw new GraphQLError("Friend request already sent", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "Friend request already sent"
+                            }
+                        ]
+                    }
+                });
+
             // Store the friend request that the user has sent to user 2
             if (!userDoc.friendRequests?.sent.includes(userId)) {
                 userDoc.friendRequests?.sent.push(userId);
@@ -89,15 +121,22 @@ export default {
                 friendDoc.friendRequests?.received.push(user.id);
             }
 
-            // Check if user 2 has sent a friend request to user 1, if so make them friends
+            // Check if user 2 has sent a friend request to user 1 and if user 1 has sent a friend request at the same time, if so make them friends
             if (
-                userDoc.friendRequests?.received.includes(userId) &&
+                userDoc.friendRequests?.sent.includes(userId) &&
                 friendDoc.friendRequests?.sent.includes(user.id)
             ) {
                 userDoc.friends.push(userId);
                 friendDoc.friends.push(user.id);
 
-                userDoc.friendRequests.received =
+                const friendChannel = new FriendChannelSchema({
+                    id: genSnowflake(),
+                    participants: [user.id, userId],
+                    createdAt: new Date(),
+                    createdTimestamp: Date.now()
+                });
+
+                userDoc.friendRequests.sent =
                     userDoc.friendRequests?.received.filter(
                         (friend) => friend !== userId
                     );
@@ -105,27 +144,21 @@ export default {
                     friendDoc.friendRequests?.sent.filter(
                         (friend) => friend !== user.id
                     );
-            }
 
-            // Check if user 1 has sent a friend request to user 2, if so make them friends
-            if (
-                friendDoc.friendRequests?.received.includes(user.id) &&
-                userDoc.friendRequests?.sent.includes(userId)
-            ) {
-                userDoc.friends.push(userId);
-                friendDoc.friends.push(user.id);
-
-                userDoc.friendRequests.sent =
-                    userDoc.friendRequests?.sent.filter(
+                userDoc.friendRequests.received =
+                    userDoc.friendRequests?.received.filter(
                         (friend) => friend !== userId
                     );
                 friendDoc.friendRequests.received =
                     friendDoc.friendRequests?.received.filter(
                         (friend) => friend !== user.id
                     );
+
+                await friendChannel.save();
             }
 
             // Save the changes
+
             await userDoc.save();
             await friendDoc.save();
 

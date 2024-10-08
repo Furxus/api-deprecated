@@ -85,6 +85,7 @@ type Message {
     id: String!
     content: String!
     edited: Boolean!
+    author: User!
     embeds: [MessageEmbed]!
     attachments: [MessageAttachment]!
     channel: Channel!

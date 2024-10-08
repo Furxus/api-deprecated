@@ -142,6 +142,20 @@ type User {
     type: [String]!
 }
 
+type DMMessage {
+    id: String!
+    author: User!
+    content: String!
+    edited: Boolean!
+    embeds: [MessageEmbed]!
+    attachments: [MessageAttachment]!
+    channel: FriendChannel!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
 type Preferences {
     mode: String!
     theme: String!

@@ -124,7 +124,7 @@ export default {
             const metadatas: urlMetadata.Result[] = [];
             for (const url of urls) {
                 const metadata = await urlMetadata(url).catch(() => null);
-                if(!metadata) continue;
+                if (!metadata) continue;
                 metadatas.push(metadata);
             }
 
@@ -151,9 +151,9 @@ export default {
                     }
                 };
 
-                if (embed.url.includes("spotify")) {
+                if (embed.url.includes("spotify"))
                     embed.media = `https://open.spotify.com/embed/track/${embed.url.split("/")[4]}`;
-                }
+
                 embeds.push(embed);
             }
 
