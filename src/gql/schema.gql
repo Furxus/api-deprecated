@@ -195,6 +195,9 @@ type Mutation {
         propertyNames: [String!]!
         propertyValues: [Any!]!
     ): User!
+    sendFriendRequest(userId: String!): Boolean!
+    acceptFriendRequest(userId: String!): Boolean!
+    declineFriendRequest(userId: String!): Boolean!
 
     # Activity Mutations
     updateActivity(userId: String!, status: String, text: String): Activity!
@@ -225,6 +228,8 @@ type Query {
     verifyUser(code: String!): Boolean!
     getPreviousAvatars: [String]!
 
+    getDMChannels: [DMChannel]!
+
     # Activity Queries
     getActivity(userId: String!): Activity!
 
@@ -243,5 +248,6 @@ type Query {
 }
 
 type Subscription {
+    sendFriendRequest(userId: String!): User!
     userUpdated: User!
 }

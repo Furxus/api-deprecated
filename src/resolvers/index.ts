@@ -43,6 +43,23 @@ export default {
                 id: parent.user
             })
     },
+    Channel: {
+        __resolveType: (parent: any) => {
+            if (parent.type === "text") return "TextChannel";
+            if (parent.type === "voice") return "VoiceChannel";
+            if (parent.type === "category") return "CategoryChannel";
+            if (parent.type === "dm") return "DMChannel";
+            return null;
+        }
+    },
+    ServerChannel: {
+        __resolveType: (parent: any) => {
+            if (parent.type === "text") return "TextChannel";
+            if (parent.type === "voice") return "VoiceChannel";
+            if (parent.type === "category") return "CategoryChannel";
+            return null;
+        }
+    },
     User: {
         servers: async (parent: User) =>
             ServerSchema.find({

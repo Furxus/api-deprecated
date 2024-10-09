@@ -51,7 +51,11 @@ const schema = inheritDirective(
             ...scalarTypeDefs,
             ...typeDefs
         },
-        resolvers
+        resolvers,
+        inheritResolversFromInterfaces: true,
+        resolverValidationOptions: {
+            requireResolversToMatchSchema: "ignore"
+        }
     }),
     "inherits"
 );

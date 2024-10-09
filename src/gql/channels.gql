@@ -29,9 +29,12 @@ type VoiceChannel @inherits(type: "BaseServerChannel") {
 }
 
 type CategoryChannel @inherits(type: "BaseServerChannel") {
-    children: [TextChannel | VoiceChannel]!
+    children: [CategoryChildChannel]!
 }
 
+union CategoryChildChannel = TextChannel | VoiceChannel
+
+union ServerChannel = CategoryChannel | TextChannel | VoiceChannel
 union Channel = CategoryChannel | TextChannel | VoiceChannel | DMChannel
 
 extend type Query {
@@ -47,22 +50,26 @@ extend type Query {
     getDMChannel(serverId: String!, id: String!): DMChannel!
     getDMChannels(serverId: String!): [DMChannel]!
 
-    getChannel(serverId: String!, id: String!): Channel!
-    getChannels(serverId: String!, type: [String]): [Channel]!
+    getChannel(serverId: String!, id: String!): ServerChannel!
+    getChannels(serverId: String!, type: [String]): [ServerChannel]!
 }
 
 extend type Mutation {
-    createChannel(serverId: String!, name: String!, type: String!): Channel!
-    deleteChannel(serverId: String!, id: String!): Channel!
+    createChannel(
+        serverId: String!
+        name: String!
+        type: String!
+    ): ServerChannel!
+    deleteChannel(serverId: String!, id: String!): ServerChannel!
     updateChannel(
         serverId: String!
         id: String!
         propertyNames: [String!]!
         propertyValues: [Any!]!
-    ): Channel!
+    ): ServerChannel!
 }
 
 extend type Subscription {
-    channelCreated(serverId: String!): Channel!
-    channelDeleted(serverId: String!): Channel!
+    channelCreated(serverId: String!): ServerChannel!
+    channelDeleted(serverId: String!): ServerChannel!
 }
