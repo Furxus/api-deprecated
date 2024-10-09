@@ -4,7 +4,17 @@ import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
 import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
-import { Channel, Invite, Member, Message, Role, Server } from "@furxus/types";
+import {
+    CategoryChannel,
+    DMChannel,
+    Invite,
+    Member,
+    Message,
+    Role,
+    Server,
+    TextChannel,
+    VoiceChannel
+} from "@furxus/types";
 
 export default {
     Server: {
@@ -52,23 +62,49 @@ export default {
                 id: parent.server
             })
     },
-    Channel: {
-        server: async (parent: Channel) =>
+    TextChannel: {
+        server: async (parent: TextChannel) =>
             ServerSchema.findOne({
                 id: parent.server
             }),
-        messages: async (parent: Channel) =>
+        messages: async (parent: TextChannel) =>
             MessageSchema.find({
                 server: parent.server,
                 channel: parent.id
             }),
-        category: async (parent: Channel) =>
+        category: async (parent: TextChannel) =>
             ChannelSchema.findOne({
                 id: parent.category
+            })
+    },
+    VoiceChannel: {
+        server: async (parent: VoiceChannel) =>
+            ServerSchema.findOne({
+                id: parent.server
             }),
-        children: async (parent: Channel) =>
+        category: async (parent: VoiceChannel) =>
+            ChannelSchema.findOne({
+                id: parent.category
+            })
+    },
+    CategoryChannel: {
+        server: async (parent: CategoryChannel) =>
+            ServerSchema.findOne({
+                id: parent.server
+            }),
+        children: async (parent: CategoryChannel) =>
             ChannelSchema.find({
                 id: { $in: parent.children }
+            })
+    },
+    DMChannel: {
+        participants: async (parent: DMChannel) =>
+            MemberSchema.find({
+                id: { $in: parent.participants }
+            }),
+        messages: async (parent: DMChannel) =>
+            MessageSchema.find({
+                channel: parent.id
             })
     },
     Message: {

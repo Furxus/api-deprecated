@@ -13,20 +13,17 @@ import messages from "./servers/messages";
 
 import serverScalars from "./servers/scalars";
 import postScalars from "./posts/scalars";
-import friendsScalars from "./friends/scalars";
 
 import posts from "./posts/posts";
 import members from "./servers/members";
 
 import { Report, User } from "@furxus/types";
-import friends from "./friends/friends";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
     ...scalarResolvers,
     ...serverScalars,
     ...postScalars,
-    ...friendsScalars,
     Upload: GraphQLUpload,
     Report: {
         post: async (parent: Report) =>
@@ -92,8 +89,7 @@ export default {
         ...channels.Query,
         ...messages.Query,
         ...posts.Query,
-        ...members.Query,
-        ...friends.Query
+        ...members.Query
     },
     Mutation: {
         ...auth.Mutation,
@@ -101,8 +97,7 @@ export default {
         ...users.Mutation,
         ...channels.Mutation,
         ...messages.Mutation,
-        ...posts.Mutation,
-        ...friends.Mutation
+        ...posts.Mutation
     },
     Subscription: {
         ...servers.Subscription,

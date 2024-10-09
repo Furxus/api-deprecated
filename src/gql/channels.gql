@@ -1,0 +1,68 @@
+type BaseChannel {
+    id: String!
+    name: String!
+    messages: [Message]!
+    type: String!
+    createdAt: DateTime!
+    createdTimestamp: Timestamp!
+    updatedAt: DateTime!
+    updatedTimestamp: Timestamp!
+}
+
+type BaseServerChannel @inherits(type: "BaseChannel") {
+    server: Server!
+    position: Int!
+}
+
+type TextChannel @inherits(type: "BaseServerChannel") {
+    category: CategoryChannel!
+    topic: String
+    nsfw: Boolean!
+}
+
+type DMChannel @inherits(type: "BaseChannel") {
+    participants: [User]!
+}
+
+type VoiceChannel @inherits(type: "BaseServerChannel") {
+    category: CategoryChannel!
+}
+
+type CategoryChannel @inherits(type: "BaseServerChannel") {
+    children: [TextChannel | VoiceChannel]!
+}
+
+union Channel = CategoryChannel | TextChannel | VoiceChannel | DMChannel
+
+extend type Query {
+    getTextChannel(serverId: String!, id: String!): TextChannel!
+    getTextChannels(serverId: String!): [TextChannel]!
+
+    getVoiceChannel(serverId: String!, id: String!): VoiceChannel!
+    getVoiceChannels(serverId: String!): [VoiceChannel]!
+
+    getCategoryChannel(serverId: String!, id: String!): CategoryChannel!
+    getCategoryChannels(serverId: String!): [CategoryChannel]!
+
+    getDMChannel(serverId: String!, id: String!): DMChannel!
+    getDMChannels(serverId: String!): [DMChannel]!
+
+    getChannel(serverId: String!, id: String!): Channel!
+    getChannels(serverId: String!, type: [String]): [Channel]!
+}
+
+extend type Mutation {
+    createChannel(serverId: String!, name: String!, type: String!): Channel!
+    deleteChannel(serverId: String!, id: String!): Channel!
+    updateChannel(
+        serverId: String!
+        id: String!
+        propertyNames: [String!]!
+        propertyValues: [Any!]!
+    ): Channel!
+}
+
+extend type Subscription {
+    channelCreated(serverId: String!): Channel!
+    channelDeleted(serverId: String!): Channel!
+}

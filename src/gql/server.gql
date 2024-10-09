@@ -64,83 +64,12 @@ type Role {
     updatedTimestamp: Timestamp!
 }
 
-type Channel {
-    id: String!
-    name: String!
-    server: Server!
-    messages: [Message]!
-    category: Channel
-    children: [Channel]
-    type: String!
-    topic: String
-    position: Int!
-    nsfw: Boolean!
-    createdAt: DateTime!
-    createdTimestamp: Timestamp!
-    updatedAt: DateTime!
-    updatedTimestamp: Timestamp!
-}
-
-type Message {
-    id: String!
-    content: String!
-    edited: Boolean!
-    author: User!
-    embeds: [MessageEmbed]!
-    attachments: [MessageAttachment]!
-    channel: Channel!
-    member: Member!
-    server: Server!
-    createdAt: DateTime!
-    createdTimestamp: Timestamp!
-    updatedAt: DateTime!
-    updatedTimestamp: Timestamp!
-}
-
-type MessageEmbed {
-    title: String
-    description: String
-    url: String
-    color: String
-    timestamp: Timestamp
-    author: EmbedAuthor
-    footer: EmbedFooter
-    image: String
-    media: String
-}
-
-type MessageAttachment {
-    url: String!
-    filename: String!
-    size: Int!
-    contentType: String!
-}
-
-type EmbedAuthor {
-    name: String!
-    url: String
-    iconUrl: String
-}
-
-type EmbedFooter {
-    text: String!
-    iconUrl: String
-}
-
 extend type Query {
     # Server Queries
     getServer(id: String!): Server!
     getServerSettings(id: String!): ServerSettings!
     getServers: [Server]!
     getUserServers: [Server]!
-
-    # Channel Queries
-    getChannel(serverId: String!, id: String!): Channel!
-    getChannels(serverId: String!, type: [String]): [Channel]!
-
-    # Message Queries
-    getMessage(serverId: String!, channelId: String!, id: String!): Message!
-    getMessages(serverId: String!, channelId: String!): [Message]!
 
     # Member Queries
     getMember(serverId: String!, memberId: String!): Member!
@@ -162,30 +91,6 @@ extend type Mutation {
         propertyNames: [String!]!
         propertyValues: [Any!]!
     ): Server!
-
-    # Channel Mutations
-    createChannel(serverId: String!, name: String!, type: String!): Channel!
-    deleteChannel(serverId: String!, id: String!): Channel!
-    updateChannel(
-        serverId: String!
-        id: String!
-        propertyNames: [String!]!
-        propertyValues: [Any!]!
-    ): Channel!
-
-    # Message Mutations
-    createMessage(
-        serverId: String!
-        channelId: String!
-        content: String!
-    ): Message!
-    deleteMessage(serverId: String!, channelId: String!, id: String!): Message!
-    editMessage(
-        serverId: String!
-        channelId: String!
-        id: String!
-        content: String!
-    ): Message!
 
     # Member Mutations
     addMember(serverId: String!, userId: String!): Member!
@@ -214,13 +119,4 @@ extend type Subscription {
     serverJoined(userId: String!): Server!
     serverLeft(userId: String!): Server!
     serverDeleted(userId: String!): Server!
-
-    # Channel Subscriptions
-    channelCreated(serverId: String!): Channel!
-    channelDeleted(serverId: String!): Channel!
-
-    # Message Subscriptions
-    messageCreated(serverId: String!, channelId: String!): Message!
-    messageEdited(serverId: String!, channelId: String!): Message!
-    messageDeleted(serverId: String!, channelId: String!): Message!
 }
