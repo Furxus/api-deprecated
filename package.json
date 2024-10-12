@@ -5,7 +5,7 @@
     "description": "",
     "main": "./build/index.js",
     "scripts": {
-        "start": "tsx -r dotenv/config ./src/index.ts",
+        "start": "bun run ./src/index.ts",
         "dev": "nodemon",
         "prepare": "husky",
         "tsc": "tsc --noEmit",
