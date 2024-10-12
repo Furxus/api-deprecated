@@ -127,7 +127,7 @@ type User {
     updatedTimestamp: Timestamp!
     servers: [Server]!
     friends: [User]!
-    friendRequests: [User]!
+    friendRequests: FriendRequests!
     posts: [Post]!
     comments: [Comment]!
     blocks: [User]!
@@ -140,6 +140,11 @@ type User {
     shares: [Post]!
     views: Int!
     type: [String]!
+}
+
+type FriendRequests {
+    sent: [User]!
+    received: [User]!
 }
 
 type Preferences {

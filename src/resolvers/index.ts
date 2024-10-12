@@ -17,7 +17,7 @@ import postScalars from "./posts/scalars";
 import posts from "./posts/posts";
 import members from "./servers/members";
 
-import { Report, User } from "@furxus/types";
+import { FriendRequests, Report, User } from "@furxus/types";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
@@ -60,6 +60,16 @@ export default {
             return null;
         }
     },
+    FriendRequests: {
+        sent: async (parent: FriendRequests) =>
+            UserSchema.find({
+                id: { $in: parent.sent }
+            }),
+        received: async (parent: FriendRequests) =>
+            UserSchema.find({
+                id: { $in: parent.received }
+            })
+    },
     User: {
         servers: async (parent: User) =>
             ServerSchema.find({
@@ -68,10 +78,6 @@ export default {
         friends: async (parent: User) =>
             UserSchema.find({
                 id: { $in: parent.friends }
-            }),
-        friendRequests: async (parent: User) =>
-            UserSchema.find({
-                id: { $in: parent.friendRequests }
             }),
         posts: async (parent: User) =>
             PostSchema.find({

@@ -79,7 +79,7 @@ export default {
                     }
                 });
 
-            if (userDoc.friendRequests.includes(userId))
+            if (userDoc.friendRequests?.sent.includes(userId))
                 throw new GraphQLError("Friend request already sent", {
                     extensions: {
                         errors: [
@@ -91,7 +91,7 @@ export default {
                     }
                 });
 
-            if (targetUser.friendRequests.includes(user.id))
+            if (userDoc.friendRequests?.received.includes(userId))
                 throw new GraphQLError("Friend request already received", {
                     extensions: {
                         errors: [
@@ -103,8 +103,8 @@ export default {
                     }
                 });
 
-            userDoc.friendRequests.push(userId);
-            targetUser.friendRequests.push(user.id);
+            userDoc.friendRequests?.sent.push(userId);
+            targetUser.friendRequests?.received.push(user.id);
 
             await userDoc.save();
             await targetUser.save();

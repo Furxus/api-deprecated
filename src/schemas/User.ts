@@ -125,7 +125,14 @@ const userSchema = new Schema(
         following: [String],
         friends: [String],
         friendRequests: {
-            type: [String]
+            sent: {
+                type: [String],
+                default: []
+            },
+            received: {
+                type: [String],
+                default: []
+            }
         },
         blocks: [String],
         blockedBy: [String],

@@ -454,7 +454,7 @@ export default {
             // Refetch the user from the database without the password and private key
             const user = await UserModel.findOne({
                 $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
-            }).select("-password -privateKey -email");
+            }).select("-password -privateKey");
 
             if (!user)
                 throw new GraphQLError("User not found", {
@@ -477,7 +477,7 @@ export default {
         },
         refreshUser: async (_: any, { token }: { token: string }) => {
             // Decrypt the tokena
-            const oldUser = Auth.checkToken(token) as any;
+            const oldUser = Auth.checkToken(token);
             if (!oldUser)
                 throw new GraphQLError("Invalid token", {
                     extensions: {
