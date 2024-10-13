@@ -4,6 +4,7 @@ import PostSchema from "schemas/posts/Post";
 import { genSnowflake, pubSub } from "struct/Server";
 import asset from "struct/AssetManagement";
 import CommentSchema from "schemas/posts/Comment";
+import { withFilter } from "graphql-subscriptions";
 
 enum PostEvents {
     PostCreated = "POST_CREATED",
@@ -355,7 +356,11 @@ export default {
             subscribe: () => pubSub.asyncIterator(PostEvents.PostUnliked)
         },
         commentCreated: {
-            subscribe: () => pubSub.asyncIterator(PostEvents.CommentCreated)
+            subscribe: withFilter(
+                () => pubSub.asyncIterator(PostEvents.CommentCreated),
+                async (payload, variables) =>
+                    payload.commentCreated.post === variables.postId
+            )
         }
     }
 };
