@@ -12,6 +12,10 @@ export enum UserEvents {
 
 export default {
     Query: {
+        getUser: async (_: any, { id }: { id: string }) =>
+            UserSchema.findOne({
+                id
+            }),
         getDMChannels: async (_: any, __: any, { user }: { user: User }) =>
             ChannelSchema.find({
                 type: "dm",
@@ -27,19 +31,7 @@ export default {
             const userDoc = await UserSchema.findOne({ id: user.id });
             const targetUser = await UserSchema.findOne({ id: userId });
 
-            if (!userDoc)
-                throw new GraphQLError("User not found", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "user",
-                                message: "User not found"
-                            }
-                        ]
-                    }
-                });
-
-            if (!targetUser)
+            if (!userDoc || !targetUser)
                 throw new GraphQLError("User not found", {
                     extensions: {
                         errors: [
@@ -105,6 +97,67 @@ export default {
 
             userDoc.friendRequests?.sent.push(userId);
             targetUser.friendRequests?.received.push(user.id);
+
+            await userDoc.save();
+            await targetUser.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
+            return true;
+        },
+        cancelFriendRequest: async (
+            _: any,
+            { userId }: { userId: string },
+            { user }: { user: User }
+        ) => {
+            const userDoc = await UserSchema.findOne({ id: user.id });
+            const targetUser = await UserSchema.findOne({ id: userId });
+
+            if (!userDoc || !targetUser)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            if (!userDoc.friendRequests?.sent.includes(userId))
+                throw new GraphQLError("Friend request not sent", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "Friend request not sent"
+                            }
+                        ]
+                    }
+                });
+
+            if (!targetUser.friendRequests?.received.includes(user.id))
+                throw new GraphQLError("Friend request not received", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "Friend request not received"
+                            }
+                        ]
+                    }
+                });
+
+            userDoc.friendRequests.sent = userDoc.friendRequests.sent.filter(
+                (id) => id !== userId
+            );
+            targetUser.friendRequests.received =
+                targetUser.friendRequests?.received.filter(
+                    (id) => id !== user.id
+                );
 
             await userDoc.save();
             await targetUser.save();

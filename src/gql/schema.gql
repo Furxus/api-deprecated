@@ -200,7 +200,9 @@ type Mutation {
         propertyNames: [String!]!
         propertyValues: [Any!]!
     ): User!
+
     sendFriendRequest(userId: String!): Boolean!
+    cancelFriendRequest(userId: String!): Boolean!
     acceptFriendRequest(userId: String!): Boolean!
     declineFriendRequest(userId: String!): Boolean!
 
@@ -229,6 +231,7 @@ type Query {
 
     # User Queries
     getUser(id: String!): User!
+    getMe: User!
     getUsers: [User]!
     verifyUser(code: String!): Boolean!
     getPreviousAvatars: [String]!

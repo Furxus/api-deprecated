@@ -5,14 +5,13 @@
     "description": "",
     "main": "./build/index.js",
     "scripts": {
-        "start": "bun run ./src/index.ts",
+        "start": "tsx ./src/index.ts",
         "dev": "nodemon",
         "prepare": "husky",
         "tsc": "tsc --noEmit",
         "lint": "eslint . --fix",
         "prettier": "prettier --write .",
-        "beautify": "bun lint && bun prettier",
-        "gen": "gql-gen --config src/codegen.ts"
+        "beautify": "bun lint && bun prettier"
     },
     "keywords": [],
     "author": "",
