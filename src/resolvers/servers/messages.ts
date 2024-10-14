@@ -19,7 +19,17 @@ export default {
     Query: {
         getMessages: async (
             _: any,
-            { serverId, channelId }: { serverId: string; channelId: string }
+            {
+                serverId,
+                channelId,
+                limit,
+                before
+            }: {
+                serverId: string;
+                channelId: string;
+                limit?: number;
+                before?: string;
+            }
         ) => {
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
@@ -51,10 +61,39 @@ export default {
                     }
                 });
 
-            return MessageSchema.find({
+            let messages = await MessageSchema.find({
                 server: serverId,
                 channel: channelId
             });
+
+            console.log("Initial message length", messages.length);
+
+            if (limit) {
+                messages = messages.slice(-limit);
+            }
+
+            if (before && limit) {
+                const index = messages.findIndex(
+                    (message) => message.id === before
+                );
+                if (index === -1)
+                    throw new GraphQLError("Message not found.", {
+                        extensions: {
+                            errors: [
+                                {
+                                    type: "message",
+                                    message: "Message not found."
+                                }
+                            ]
+                        }
+                    });
+
+                messages = messages.slice(index - limit, index);
+            }
+
+            console.log("Final message length", messages);
+
+            return messages;
         }
     },
     Mutation: {
