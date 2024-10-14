@@ -154,6 +154,25 @@ export default {
                 });
 
             return userDoc.previousAvatars;
+        },
+        getMe: async (_: any, __: any, { user }: { user: User }) => {
+            const userDoc = await UserModel.findOne({
+                id: user.id
+            });
+
+            if (!userDoc)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            return userDoc;
         }
     },
     Mutation: {

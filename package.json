@@ -11,8 +11,7 @@
         "tsc": "tsc --noEmit",
         "lint": "eslint . --fix",
         "prettier": "prettier --write .",
-        "beautify": "bun lint && bun prettier",
-        "gen": "gql-gen --config src/codegen.ts"
+        "beautify": "bun lint && bun prettier"
     },
     "keywords": [],
     "author": "",
