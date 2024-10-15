@@ -245,20 +245,9 @@ export default {
             subscribe: withFilter(
                 () => pubSub.asyncIterator(ChannelEvents.ChannelCreated),
                 async (
-                    payload,
-                    { serverId }: { serverId: string },
-                    { user }: { user: User }
-                ) => {
-                    if (payload.channelCreated.server !== serverId)
-                        return false;
-
-                    const server = await ServerSchema.findOne({
-                        id: serverId
-                    });
-                    if (!server) return false;
-
-                    return server.members.includes(user.id);
-                }
+                    { channelCreated },
+                    { serverId }: { serverId: string }
+                ) => channelCreated.server === serverId
             )
         },
         channelDeleted: {
@@ -266,20 +255,9 @@ export default {
             subscribe: withFilter(
                 () => pubSub.asyncIterator(ChannelEvents.ChannelDeleted),
                 async (
-                    payload,
-                    { serverId }: { serverId: string },
-                    { user }: { user: User }
-                ) => {
-                    if (payload.channelDeleted.server !== serverId)
-                        return false;
-
-                    const server = await ServerSchema.findOne({
-                        id: serverId
-                    });
-                    if (!server) return false;
-
-                    return server.members.includes(user.id);
-                }
+                    { channelDeleted },
+                    { serverId }: { serverId: string }
+                ) => channelDeleted.server === serverId
             )
         }
     }
