@@ -47,9 +47,6 @@ extend type Query {
     getCategoryChannel(serverId: String!, id: String!): CategoryChannel!
     getCategoryChannels(serverId: String!): [CategoryChannel]!
 
-    getDMChannel(serverId: String!, id: String!): DMChannel!
-    getDMChannels(serverId: String!): [DMChannel]!
-
     getChannel(serverId: String!, id: String!): ServerChannel!
     getChannels(serverId: String!, type: [String]): [ServerChannel]!
 }
