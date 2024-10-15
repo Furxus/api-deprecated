@@ -21,7 +21,9 @@ export default {
             _: any,
             {
                 serverId,
-                channelId
+                channelId,
+                limit,
+                cursor
             }: {
                 serverId: string;
                 channelId: string;
@@ -59,10 +61,17 @@ export default {
                     }
                 });
 
-            return MessageSchema.find({
+            const messages = await MessageSchema.find({
                 server: serverId,
-                channel: channelId
-            });
+                channel: channelId,
+                ...(cursor
+                    ? { createdTimestamp: { $lt: parseInt(cursor) } }
+                    : {})
+            })
+                .sort({ createdTimestamp: -1 })
+                .limit(limit ?? 25);
+
+            return messages.reverse();
         }
     },
     Mutation: {
