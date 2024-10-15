@@ -237,8 +237,6 @@ type Query {
     verifyUser(code: String!): Boolean!
     getPreviousAvatars: [String]!
 
-    getDMChannels: [DMChannel]!
-
     # Activity Queries
     getActivity(userId: String!): Activity!
 
