@@ -19,7 +19,15 @@ export default {
     Query: {
         getMessages: async (
             _: any,
-            { serverId, channelId }: { serverId: string; channelId: string }
+            {
+                serverId,
+                channelId
+            }: {
+                serverId: string;
+                channelId: string;
+                limit?: number;
+                cursor?: string;
+            }
         ) => {
             const server = await ServerSchema.findOne({ id: serverId });
             if (!server)
@@ -146,7 +154,7 @@ export default {
                         name: metadata["og:site_name"].split(",")[0],
                         url: metadata["og:url"],
                         iconUrl: !metadata.favicons[0]?.href.startsWith("/")
-                            ? metadata.favicons[0]?.href ?? null
+                            ? (metadata.favicons[0]?.href ?? null)
                             : null
                     }
                 };
@@ -296,7 +304,7 @@ export default {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
                         iconUrl: !metadata.favicons[0].href.startsWith("/")
-                            ? metadata.favicons[0]?.href ?? null
+                            ? (metadata.favicons[0]?.href ?? null)
                             : null
                     }
                 });
