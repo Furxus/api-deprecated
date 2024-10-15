@@ -1,6 +1,5 @@
 import { User } from "@furxus/types";
 import { pubSub } from "struct/Server";
-import ChannelSchema from "schemas/servers/Channel";
 import UserSchema from "schemas/User";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
@@ -15,11 +14,6 @@ export default {
         getUser: async (_: any, { id }: { id: string }) =>
             UserSchema.findOne({
                 id
-            }),
-        getDMChannels: async (_: any, __: any, { user }: { user: User }) =>
-            ChannelSchema.find({
-                type: "dm",
-                $in: { participants: user.id }
             })
     },
     Mutation: {
