@@ -207,6 +207,8 @@ type Mutation {
     declineFriendRequest(userId: String!): Boolean!
     removeFriend(userId: String!): Boolean!
 
+    openDMChannel(recipient: String!): DMChannel!
+
     # Activity Mutations
     updateActivity(userId: String!, status: String, text: String): Activity!
 
@@ -243,6 +245,9 @@ type Query {
     # Follow Queries
     getFollowers(userId: String!): [User]!
     getFollowing(userId: String!): [User]!
+
+    getDMs: [DMChannel]!
+    getDM(id: String!): DMChannel!
 
     # Block Queries
     getBlockedUsers(userId: String!): [User]!

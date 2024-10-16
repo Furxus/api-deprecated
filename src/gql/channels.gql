@@ -21,7 +21,8 @@ type TextChannel @inherits(type: "BaseServerChannel") {
 }
 
 type DMChannel @inherits(type: "BaseChannel") {
-    recipient: User!
+    recipient1: User!
+    recipient2: User!
 }
 
 type VoiceChannel @inherits(type: "BaseServerChannel") {

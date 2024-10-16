@@ -17,7 +17,14 @@ import postScalars from "./posts/scalars";
 import posts from "./posts/posts";
 import members from "./servers/members";
 
-import { FriendRequests, Report, User } from "@furxus/types";
+import {
+    BaseServerChannel,
+    Channel,
+    FriendRequests,
+    Report,
+    User
+} from "@furxus/types";
+import dms from "./dms";
 
 // All these make sure that the resolvers are properly typed and all the types extend each other without storing full objects in the database, instead we use IDs
 export default {
@@ -44,20 +51,20 @@ export default {
             })
     },
     Channel: {
-        __resolveType: (parent: any) => {
+        __resolveType: (parent: Channel) => {
             if (parent.type === "text") return "TextChannel";
             if (parent.type === "voice") return "VoiceChannel";
             if (parent.type === "category") return "CategoryChannel";
             if (parent.type === "dm") return "DMChannel";
-            return null;
+            return "TextChannel";
         }
     },
     ServerChannel: {
-        __resolveType: (parent: any) => {
+        __resolveType: (parent: BaseServerChannel) => {
             if (parent.type === "text") return "TextChannel";
             if (parent.type === "voice") return "VoiceChannel";
             if (parent.type === "category") return "CategoryChannel";
-            return null;
+            return "TextChannel";
         }
     },
     FriendRequests: {
@@ -68,6 +75,20 @@ export default {
         received: async (parent: FriendRequests) =>
             UserSchema.find({
                 id: { $in: parent.received }
+            })
+    },
+    DMChannel: {
+        recipient1: async (parent: any) =>
+            UserSchema.findOne({
+                id: parent.recipient1
+            }),
+        recipient2: async (parent: any) =>
+            UserSchema.findOne({
+                id: parent.recipient2
+            }),
+        messages: async (parent: any) =>
+            MessageSchema.find({
+                channel: parent.id
             })
     },
     User: {
@@ -112,7 +133,8 @@ export default {
         ...channels.Query,
         ...messages.Query,
         ...posts.Query,
-        ...members.Query
+        ...members.Query,
+        ...dms.Query
     },
     Mutation: {
         ...auth.Mutation,
@@ -120,13 +142,15 @@ export default {
         ...users.Mutation,
         ...channels.Mutation,
         ...messages.Mutation,
-        ...posts.Mutation
+        ...posts.Mutation,
+        ...dms.Mutation
     },
     Subscription: {
         ...servers.Subscription,
         ...channels.Subscription,
         ...messages.Subscription,
         ...posts.Subscription,
-        ...users.Subscription
+        ...users.Subscription,
+        ...dms.Subscription
     }
 };

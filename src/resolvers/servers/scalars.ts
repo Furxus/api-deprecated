@@ -6,7 +6,6 @@ import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
 import {
     CategoryChannel,
-    DMChannel,
     Invite,
     Member,
     Message,
@@ -97,16 +96,7 @@ export default {
                 id: { $in: parent.children }
             })
     },
-    DMChannel: {
-        participants: async (parent: DMChannel) =>
-            MemberSchema.find({
-                id: { $in: parent.participants }
-            }),
-        messages: async (parent: DMChannel) =>
-            MessageSchema.find({
-                channel: parent.id
-            })
-    },
+
     Message: {
         member: async (parent: Message) =>
             MemberSchema.findOne({
