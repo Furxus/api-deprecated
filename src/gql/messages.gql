@@ -6,8 +6,6 @@ type Message {
     embeds: [MessageEmbed]!
     attachments: [MessageAttachment]!
     channel: Channel!
-    member: Member!
-    server: Server!
     createdAt: DateTime!
     createdTimestamp: Timestamp!
     updatedAt: DateTime!
@@ -45,32 +43,18 @@ type EmbedFooter {
 }
 
 extend type Query {
-    getMessage(serverId: String!, channelId: String!, id: String!): Message!
-    getMessages(
-        serverId: String!
-        channelId: String!
-        limit: Int
-        cursor: String
-    ): [Message]!
+    getMessage(channelId: String!, id: String!): Message!
+    getMessages(channelId: String!, limit: Int, cursor: String): [Message]!
 }
 
 extend type Mutation {
-    createMessage(
-        serverId: String!
-        channelId: String!
-        content: String!
-    ): Message!
-    deleteMessage(serverId: String!, channelId: String!, id: String!): Message!
-    editMessage(
-        serverId: String!
-        channelId: String!
-        id: String!
-        content: String!
-    ): Message!
+    createMessage(channelId: String!, content: String!): Message!
+    deleteMessage(channelId: String!, id: String!): Message!
+    editMessage(channelId: String!, id: String!, content: String!): Message!
 }
 
 extend type Subscription {
-    messageCreated(serverId: String!, channelId: String!): Message!
-    messageEdited(serverId: String!, channelId: String!): Message!
-    messageDeleted(serverId: String!, channelId: String!): Message!
+    messageCreated(channelId: String!): Message!
+    messageEdited(channelId: String!): Message!
+    messageDeleted(channelId: String!): Message!
 }

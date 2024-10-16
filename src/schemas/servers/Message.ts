@@ -6,6 +6,10 @@ const messageSchema = new Schema({
         required: true,
         unique: true
     },
+    author: {
+        type: String,
+        required: true
+    },
     content: {
         type: String,
         required: true
@@ -27,14 +31,6 @@ const messageSchema = new Schema({
         required: false
     },
     channel: {
-        type: String,
-        required: true
-    },
-    member: {
-        type: String,
-        required: true
-    },
-    server: {
         type: String,
         required: true
     },

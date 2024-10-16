@@ -4,6 +4,7 @@ import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
 import RoleSchema from "schemas/servers/Role";
 import MessageSchema from "schemas/servers/Message";
+import DMChannelSchema from "schemas/DMChannel";
 import {
     CategoryChannel,
     Invite,
@@ -98,17 +99,15 @@ export default {
     },
 
     Message: {
-        member: async (parent: Message) =>
-            MemberSchema.findOne({
-                server: parent.server,
-                user: parent.member
-            }),
-        server: async (parent: Message) =>
-            ServerSchema.findOne({
-                id: parent.server
+        author: async (parent: Message) =>
+            UserSchema.findOne({
+                id: parent.author
             }),
         channel: async (parent: Message) =>
             ChannelSchema.findOne({
+                id: parent.channel
+            }) ||
+            DMChannelSchema.findOne({
                 id: parent.channel
             })
     }

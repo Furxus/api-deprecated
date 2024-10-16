@@ -1,6 +1,5 @@
 import { GraphQLError } from "graphql";
 import MessageSchema from "schemas/servers/Message";
-import ServerSchema from "schemas/servers/Server";
 import ChannelSchema from "schemas/servers/Channel";
 import { genSnowflake, pubSub } from "struct/Server";
 import { withFilter } from "graphql-subscriptions";
@@ -20,33 +19,17 @@ export default {
         getMessages: async (
             _: any,
             {
-                serverId,
                 channelId,
                 limit,
                 cursor
             }: {
-                serverId: string;
                 channelId: string;
                 limit?: number;
                 cursor?: string;
             }
         ) => {
-            const server = await ServerSchema.findOne({ id: serverId });
-            if (!server)
-                throw new GraphQLError("Server not found.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "Server not found."
-                            }
-                        ]
-                    }
-                });
-
             const channel = await ChannelSchema.findOne({
-                id: channelId,
-                server: serverId
+                id: channelId
             });
 
             if (!channel)
@@ -62,7 +45,6 @@ export default {
                 });
 
             const messages = await MessageSchema.find({
-                server: serverId,
                 channel: channelId,
                 ...(cursor
                     ? { createdTimestamp: { $lt: parseInt(cursor) } }
@@ -78,11 +60,9 @@ export default {
         createMessage: async (
             _: any,
             {
-                serverId,
                 channelId,
                 content
             }: {
-                serverId: string;
                 channelId: string;
                 content: string;
             },
@@ -105,24 +85,9 @@ export default {
                     }
                 );
 
-            // Check if the server exists
-            const server = await ServerSchema.findOne({ id: serverId });
-            if (!server)
-                throw new GraphQLError("Server not found.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "Server not found."
-                            }
-                        ]
-                    }
-                });
-
             // Check if the channel exists
             const channel = await ChannelSchema.findOne({
-                id: channelId,
-                server: serverId
+                id: channelId
             });
 
             if (!channel)
@@ -163,7 +128,7 @@ export default {
                         name: metadata["og:site_name"].split(",")[0],
                         url: metadata["og:url"],
                         iconUrl: !metadata.favicons[0]?.href.startsWith("/")
-                            ? metadata.favicons[0]?.href ?? null
+                            ? (metadata.favicons[0]?.href ?? null)
                             : null
                     }
                 };
@@ -177,9 +142,8 @@ export default {
             // Create the message
             const message = new MessageSchema({
                 id: genSnowflake(),
-                server: server.id,
                 channel: channel.id,
-                member: user.id,
+                author: user.id,
                 content,
                 embeds,
                 createdAt: new Date(),
@@ -200,12 +164,10 @@ export default {
         editMessage: async (
             _: any,
             {
-                serverId,
                 channelId,
                 id: messageId,
                 content
             }: {
-                serverId: string;
                 channelId: string;
                 id: string;
                 content: string;
@@ -228,22 +190,8 @@ export default {
                     }
                 );
 
-            const server = await ServerSchema.findOne({ id: serverId });
-            if (!server)
-                throw new GraphQLError("Server not found.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "Server not found."
-                            }
-                        ]
-                    }
-                });
-
             const channel = await ChannelSchema.findOne({
-                id: channelId,
-                server: serverId
+                id: channelId
             });
             if (!channel)
                 throw new GraphQLError("Channel not found.", {
@@ -259,7 +207,6 @@ export default {
 
             const message = await MessageSchema.findOne({
                 id: messageId,
-                server: serverId,
                 channel: channelId
             });
 
@@ -275,7 +222,7 @@ export default {
                     }
                 });
 
-            if (message.member !== user.id)
+            if (message.author !== user.id)
                 throw new GraphQLError(
                     "You are not the author of this message.",
                     {
@@ -313,7 +260,7 @@ export default {
                         name: metadata["og:site_name"],
                         url: metadata["og:url"],
                         iconUrl: !metadata.favicons[0].href.startsWith("/")
-                            ? metadata.favicons[0]?.href ?? null
+                            ? (metadata.favicons[0]?.href ?? null)
                             : null
                     }
                 });
@@ -333,33 +280,16 @@ export default {
         deleteMessage: async (
             _: any,
             {
-                serverId,
                 channelId,
                 id: messageId
             }: {
-                serverId: string;
                 channelId: string;
                 id: string;
             }
         ) => {
-            // Check if the server exists
-            const server = await ServerSchema.findOne({ id: serverId });
-            if (!server)
-                throw new GraphQLError("Server not found.", {
-                    extensions: {
-                        errors: [
-                            {
-                                type: "server",
-                                message: "Server not found."
-                            }
-                        ]
-                    }
-                });
-
             // Check if the channel exists
             const channel = await ChannelSchema.findOne({
-                id: channelId,
-                server: serverId
+                id: channelId
             });
 
             if (!channel)
@@ -377,7 +307,6 @@ export default {
             // Check if the message exists
             const message = await MessageSchema.findOne({
                 id: messageId,
-                server: serverId,
                 channel: channelId
             });
 
@@ -410,15 +339,9 @@ export default {
                 () => pubSub.asyncIterator(MessageEvents.MessageCreated),
                 async (
                     { messageCreated },
-                    {
-                        serverId,
-                        channelId
-                    }: { serverId: string; channelId: string }
+                    { channelId }: { channelId: string }
                 ) => {
-                    return (
-                        messageCreated.server === serverId &&
-                        messageCreated.channel === channelId
-                    );
+                    return messageCreated.channel === channelId;
                 }
             )
         },
@@ -427,15 +350,9 @@ export default {
                 () => pubSub.asyncIterator(MessageEvents.MessageEdited),
                 async (
                     { messageEdited },
-                    {
-                        serverId,
-                        channelId
-                    }: { serverId: string; channelId: string }
+                    { channelId }: { channelId: string }
                 ) => {
-                    return (
-                        messageEdited.server === serverId &&
-                        messageEdited.channel === channelId
-                    );
+                    return messageEdited.channel === channelId;
                 }
             )
         },
@@ -444,15 +361,9 @@ export default {
                 () => pubSub.asyncIterator(MessageEvents.MessageDeleted),
                 async (
                     { messageDeleted },
-                    {
-                        serverId,
-                        channelId
-                    }: { serverId: string; channelId: string }
+                    { channelId }: { channelId: string }
                 ) => {
-                    return (
-                        messageDeleted.server === serverId &&
-                        messageDeleted.channel === channelId
-                    );
+                    return messageDeleted.channel === channelId;
                 }
             )
         }
