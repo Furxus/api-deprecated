@@ -205,6 +205,7 @@ type Mutation {
     cancelFriendRequest(userId: String!): Boolean!
     acceptFriendRequest(userId: String!): Boolean!
     declineFriendRequest(userId: String!): Boolean!
+    removeFriend(userId: String!): Boolean!
 
     # Activity Mutations
     updateActivity(userId: String!, status: String, text: String): Activity!
@@ -235,8 +236,6 @@ type Query {
     getUsers: [User]!
     verifyUser(code: String!): Boolean!
     getPreviousAvatars: [String]!
-
-    getDMChannels: [DMChannel]!
 
     # Activity Queries
     getActivity(userId: String!): Activity!

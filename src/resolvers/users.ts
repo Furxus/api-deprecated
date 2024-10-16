@@ -1,6 +1,5 @@
 import { User } from "@furxus/types";
 import { pubSub } from "struct/Server";
-import ChannelSchema from "schemas/servers/Channel";
 import UserSchema from "schemas/User";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
@@ -15,11 +14,6 @@ export default {
         getUser: async (_: any, { id }: { id: string }) =>
             UserSchema.findOne({
                 id
-            }),
-        getDMChannels: async (_: any, __: any, { user }: { user: User }) =>
-            ChannelSchema.find({
-                type: "dm",
-                $in: { participants: user.id }
             })
     },
     Mutation: {
@@ -158,6 +152,125 @@ export default {
                 targetUser.friendRequests?.received.filter(
                     (id) => id !== user.id
                 );
+
+            await userDoc.save();
+            await targetUser.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
+            return true;
+        },
+        acceptFriendRequest: async (
+            _: any,
+            { userId }: { userId: string },
+            { user }: { user: User }
+        ) => {
+            const userDoc = await UserSchema.findOne({ id: user.id });
+            const targetUser = await UserSchema.findOne({ id: userId });
+
+            if (!userDoc || !targetUser)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            if (!userDoc.friendRequests?.received.includes(userId))
+                throw new GraphQLError("Friend request not received", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "Friend request not received"
+                            }
+                        ]
+                    }
+                });
+
+            if (!targetUser.friendRequests?.sent.includes(user.id))
+                throw new GraphQLError("Friend request not sent", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "Friend request not sent"
+                            }
+                        ]
+                    }
+                });
+
+            userDoc.friendRequests.received =
+                userDoc.friendRequests.received.filter((id) => id !== userId);
+            targetUser.friendRequests.sent =
+                targetUser.friendRequests.sent.filter((id) => id !== user.id);
+
+            userDoc.friends.push(userId);
+            targetUser.friends.push(user.id);
+
+            await userDoc.save();
+            await targetUser.save();
+
+            pubSub.publish(UserEvents.UserUpdated, {
+                userUpdated: userDoc
+            });
+
+            return true;
+        },
+        removeFriend: async (
+            _: any,
+            { userId }: { userId: string },
+            { user }: { user: User }
+        ) => {
+            const userDoc = await UserSchema.findOne({ id: user.id });
+            const targetUser = await UserSchema.findOne({ id: userId });
+
+            if (!userDoc || !targetUser)
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User not found"
+                            }
+                        ]
+                    }
+                });
+
+            if (!userDoc.friends.includes(userId))
+                throw new GraphQLError("User is not a friend", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User is not a friend"
+                            }
+                        ]
+                    }
+                });
+
+            if (!targetUser.friends.includes(user.id))
+                throw new GraphQLError("User is not a friend", {
+                    extensions: {
+                        errors: [
+                            {
+                                type: "user",
+                                message: "User is not a friend"
+                            }
+                        ]
+                    }
+                });
+
+            userDoc.friends = userDoc.friends.filter((id) => id !== userId);
+            targetUser.friends = targetUser.friends.filter(
+                (id) => id !== user.id
+            );
 
             await userDoc.save();
             await targetUser.save();
