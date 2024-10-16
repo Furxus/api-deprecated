@@ -46,7 +46,7 @@ type EmbedFooter {
 
 extend type Query {
     getMessage(serverId: String!, channelId: String!, id: String!): Message!
-    getMessages(serverId: String!, channelId: String!): [Message]!
+    getMessages(serverId: String!, channelId: String!, $limit: Int, $cursor: String): [Message]!
 }
 
 extend type Mutation {
