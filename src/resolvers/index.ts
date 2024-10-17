@@ -9,7 +9,7 @@ import MessageSchema from "schemas/servers/Message";
 import CommentSchema from "schemas/posts/Comment";
 import PostSchema from "schemas/posts/Post";
 import channels from "./servers/channels";
-import messages from "./servers/messages";
+import messages from "./messages";
 
 import serverScalars from "./servers/scalars";
 import postScalars from "./posts/scalars";

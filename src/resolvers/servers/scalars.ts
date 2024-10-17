@@ -103,12 +103,18 @@ export default {
             UserSchema.findOne({
                 id: parent.author
             }),
-        channel: async (parent: Message) =>
-            ChannelSchema.findOne({
+        channel: async (parent: Message) => {
+            let channel = await ChannelSchema.findOne({
                 id: parent.channel
-            }) ||
-            DMChannelSchema.findOne({
-                id: parent.channel
-            })
+            });
+
+            if (!channel) {
+                channel = await DMChannelSchema.findOne({
+                    id: parent.channel
+                });
+            }
+
+            return channel;
+        }
     }
 };

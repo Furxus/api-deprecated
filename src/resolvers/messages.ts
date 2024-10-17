@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql";
 import MessageSchema from "schemas/servers/Message";
 import ChannelSchema from "schemas/servers/Channel";
+import DMChannelSchema from "schemas/DMChannel";
 import { genSnowflake, pubSub } from "struct/Server";
 import { withFilter } from "graphql-subscriptions";
 import { User } from "@furxus/types";
@@ -28,9 +29,14 @@ export default {
                 cursor?: string;
             }
         ) => {
-            const channel = await ChannelSchema.findOne({
+            let channel = await ChannelSchema.findOne({
                 id: channelId
             });
+
+            if (!channel)
+                channel = await DMChannelSchema.findOne({
+                    id: channelId
+                });
 
             if (!channel)
                 throw new GraphQLError("Channel not found.", {
@@ -86,9 +92,15 @@ export default {
                 );
 
             // Check if the channel exists
-            const channel = await ChannelSchema.findOne({
+            let channel = await ChannelSchema.findOne({
                 id: channelId
             });
+
+            if (!channel)
+                channel = await DMChannelSchema.findOne({
+                    id: channelId,
+                    $or: [{ recipient1: user.id }, { recipient2: user.id }]
+                });
 
             if (!channel)
                 throw new GraphQLError("Channel not found.", {
@@ -190,9 +202,16 @@ export default {
                     }
                 );
 
-            const channel = await ChannelSchema.findOne({
+            let channel = await ChannelSchema.findOne({
                 id: channelId
             });
+
+            if (!channel)
+                channel = await DMChannelSchema.findOne({
+                    id: channelId,
+                    $or: [{ recipient1: user.id }, { recipient2: user.id }]
+                });
+
             if (!channel)
                 throw new GraphQLError("Channel not found.", {
                     extensions: {
@@ -288,9 +307,14 @@ export default {
             }
         ) => {
             // Check if the channel exists
-            const channel = await ChannelSchema.findOne({
+            let channel = await ChannelSchema.findOne({
                 id: channelId
             });
+
+            if (!channel)
+                channel = await DMChannelSchema.findOne({
+                    id: channelId
+                });
 
             if (!channel)
                 throw new GraphQLError("Channel not found.", {
