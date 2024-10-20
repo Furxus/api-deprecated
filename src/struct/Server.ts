@@ -42,7 +42,7 @@ const typeDefs = gql(
 
 const wsServer = new WebSocketServer({
     server: httpServer,
-    path: "/"
+    path: "/v2"
 });
 
 const schema = inheritDirective(
@@ -144,7 +144,7 @@ export default class Server extends ApolloServer {
         await super.start();
         app.use(helmet());
         app.use(
-            "/",
+            "/v2",
             cors<cors.CorsRequest>({
                 origin: "*"
             }),
