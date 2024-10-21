@@ -7,9 +7,10 @@ const { combine, timestamp, printf, errors } = format;
 
 const tsFormat = () => moment().format("YYYY-MM-DD HH:mm:ss A").trim();
 
-const myFormat = printf(
-    ({ level, message, timestamp, stack }) =>
-        `[${timestamp}] ${capitalize(level)}: ${message}\n${stack || ""}`
+const myFormat = printf(({ level, message, timestamp, stack }) =>
+    stack
+        ? `[${timestamp}] ${capitalize(level)}: ${message}\n${stack}`
+        : `[${timestamp}] ${capitalize(level)}: ${message}`
 );
 
 const { NODE_ENV } = process.env;
