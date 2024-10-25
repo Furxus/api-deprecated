@@ -145,7 +145,10 @@ export default {
                     }
                 };
 
-                if (embed.url.includes("spotify"))
+                if (
+                    embed.url.includes("spotify") &&
+                    embed.url.includes("track")
+                )
                     embed.media = `https://open.spotify.com/embed/track/${embed.url.split("/")[4]}`;
 
                 embeds.push(embed);
