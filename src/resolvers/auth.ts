@@ -346,7 +346,7 @@ export default {
                 displayName: value.displayName,
                 password: newPass,
                 defaultAvatar: imageUrl[0],
-                accentColor: dominantColor,
+                accentColor: "#" + dominantColor,
                 privateKey,
                 dateOfBirth: dateOfBirth.toDate(),
                 createdAt: new Date(),
@@ -578,7 +578,7 @@ export default {
 
             userDoc.avatar = null;
             userDoc.defaultAvatar = imageUrl[0];
-            userDoc.accentColor = dominantColor;
+            userDoc.accentColor = "#" + dominantColor;
 
             await userDoc.save();
 
@@ -687,7 +687,7 @@ export default {
                         dominantColor = genRandColor();
                     }
 
-                    userDoc.accentColor = dominantColor;
+                    userDoc.accentColor = "#" + dominantColor;
                 }
             }
 
@@ -742,7 +742,7 @@ export default {
                 dominantColor = genRandColor();
             }
 
-            userDoc.accentColor = dominantColor;
+            userDoc.accentColor = "#" + dominantColor;
 
             await userDoc.save();
 

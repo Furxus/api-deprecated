@@ -28,11 +28,18 @@ import { threadId } from "worker_threads";
 import Mailgun from "mailgun.js";
 import formData from "form-data";
 import ColorThief from "color-thief-ts";
+import { Server as SocketServer } from "socket.io";
 
-const port = process.env.PORT || 1125;
+const port = process.env.PORT || 4000;
 const app = express();
 
 const httpServer = createServer(app);
+const io = new SocketServer(httpServer, {
+    connectionStateRecovery: {},
+    cors: {
+        origin: "*"
+    }
+});
 
 const typeDefs = gql(
     readdirSync("src/gql")
@@ -42,7 +49,7 @@ const typeDefs = gql(
 
 const wsServer = new WebSocketServer({
     server: httpServer,
-    path: "/"
+    path: "/v2"
 });
 
 const schema = inheritDirective(
@@ -144,7 +151,7 @@ export default class Server extends ApolloServer {
         await super.start();
         app.use(helmet());
         app.use(
-            "/",
+            "/v2",
             cors<cors.CorsRequest>({
                 origin: "*"
             }),
@@ -214,6 +221,12 @@ export default class Server extends ApolloServer {
 
         httpServer.listen(port, () => {
             logger.info(`Server running on port ${port}`);
+            io.on("connection", (socket) => {
+                logger.info("Socket connected: " + socket.id);
+                socket.on("disconnect", () => {
+                    logger.info("Socket disconnected: " + socket.id);
+                });
+            });
         });
     }
 }
