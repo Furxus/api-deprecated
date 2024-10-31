@@ -234,7 +234,6 @@ type Query {
 
     # User Queries
     getUser(id: String!): User!
-    getMe: User!
     getUsers: [User]!
     verifyUser(code: String!): Boolean!
     getPreviousAvatars: [String]!
