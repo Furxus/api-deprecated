@@ -14,7 +14,11 @@ export default {
         getUser: async (_: any, { id }: { id: string }) =>
             UserSchema.findOne({
                 id
-            })
+            }),
+        me: async (_: any, __: any, { user }: { user: User }) =>
+            UserSchema.findOne({
+                id: user.id
+            }).select("-password -privateKey")
     },
     Mutation: {
         sendFriendRequest: async (
