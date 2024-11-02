@@ -8,6 +8,8 @@ import ServerSchema from "schemas/servers/Server";
 import MessageSchema from "schemas/Message";
 import CommentSchema from "schemas/posts/Comment";
 import PostSchema from "schemas/posts/Post";
+import DMChannelSchema from "schemas/DMChannel";
+import ChannelSchema from "schemas/servers/Channel";
 import channels from "./servers/channels";
 import messages from "./messages";
 
@@ -18,10 +20,12 @@ import posts from "./posts/posts";
 import members from "./servers/members";
 
 import {
+    BaseChannel,
     BaseServerChannel,
     Channel,
     DMChannel,
     FriendRequests,
+    Message,
     Report,
     User
 } from "@furxus/types";
@@ -49,6 +53,12 @@ export default {
         user: async (parent: Report) =>
             UserSchema.findOne({
                 id: parent.user
+            })
+    },
+    BaseChannel: {
+        messages: async (parent: BaseChannel) =>
+            MessageSchema.find({
+                channel: parent.id
             })
     },
     Channel: {
@@ -86,13 +96,25 @@ export default {
         recipient2: async (parent: DMChannel) =>
             UserSchema.findOne({
                 id: parent.recipient2
+            })
+    },
+    Message: {
+        author: async (parent: Message) =>
+            UserSchema.findOne({
+                id: parent.author
             }),
-        messages: async (parent: DMChannel) => {
-            console.log(parent);
-
-            return MessageSchema.find({
-                channel: parent.id
+        channel: async (parent: Message) => {
+            let channel = await ChannelSchema.findOne({
+                id: parent.channel
             });
+
+            if (!channel) {
+                channel = await DMChannelSchema.findOne({
+                    id: parent.channel
+                });
+            }
+
+            return channel;
         }
     },
     User: {

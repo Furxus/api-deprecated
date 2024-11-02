@@ -1,15 +1,13 @@
 import MemberSchema from "schemas/servers/Member";
-import ChannelSchema from "schemas/servers/Channel";
 import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
 import RoleSchema from "schemas/servers/Role";
+import ChannelSchema from "schemas/servers/Channel";
 import MessageSchema from "schemas/Message";
-import DMChannelSchema from "schemas/DMChannel";
 import {
     CategoryChannel,
     Invite,
     Member,
-    Message,
     Role,
     Server,
     TextChannel,
@@ -43,6 +41,7 @@ export default {
             })
     },
     Member: {
+        id: async (parent: Member) => parent.user,
         user: async (parent: Member) =>
             UserSchema.findOne({
                 id: parent.user
@@ -96,25 +95,5 @@ export default {
             ChannelSchema.find({
                 id: { $in: parent.children }
             })
-    },
-
-    Message: {
-        author: async (parent: Message) =>
-            UserSchema.findOne({
-                id: parent.author
-            }),
-        channel: async (parent: Message) => {
-            let channel = await ChannelSchema.findOne({
-                id: parent.channel
-            });
-
-            if (!channel) {
-                channel = await DMChannelSchema.findOne({
-                    id: parent.channel
-                });
-            }
-
-            return channel;
-        }
     }
 };

@@ -7,6 +7,7 @@ import { genSnowflake, pubSub } from "struct/Server";
 import { GraphQLError } from "graphql";
 import { withFilter } from "graphql-subscriptions";
 import { User } from "@furxus/types";
+import MessageSchema from "schemas/Message";
 
 type CreateServerInput = {
     name: string;
@@ -408,6 +409,7 @@ export default {
             await ServerSchema.deleteOne({ id });
             await ChannelSchema.deleteMany({ server: id });
             await MemberSchema.deleteMany({ server: id });
+            await MessageSchema.deleteMany({ server: id });
 
             return server;
         }
