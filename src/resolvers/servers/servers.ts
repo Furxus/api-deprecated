@@ -146,7 +146,6 @@ export default {
 
             // Create the member (owner)
             const member = new MemberSchema({
-                id: user.id,
                 user: user.id,
                 server: server.id,
                 permissions: ["Administrator"],
@@ -275,7 +274,6 @@ export default {
 
             // Create the member
             const member = new MemberSchema({
-                id: user.id,
                 user: user.id,
                 server: server.id,
                 joinedAt: new Date(),

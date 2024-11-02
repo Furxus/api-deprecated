@@ -4,7 +4,8 @@ const postSchema = new Schema({
     id: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     hashtags: [String],
     user: {

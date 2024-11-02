@@ -3,7 +3,7 @@ import ChannelSchema from "schemas/servers/Channel";
 import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
 import RoleSchema from "schemas/servers/Role";
-import MessageSchema from "schemas/servers/Message";
+import MessageSchema from "schemas/Message";
 import DMChannelSchema from "schemas/DMChannel";
 import {
     CategoryChannel,

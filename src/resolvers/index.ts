@@ -5,7 +5,7 @@ import servers from "./servers/servers";
 import auth from "./auth";
 import UserSchema from "schemas/User";
 import ServerSchema from "schemas/servers/Server";
-import MessageSchema from "schemas/servers/Message";
+import MessageSchema from "schemas/Message";
 import CommentSchema from "schemas/posts/Comment";
 import PostSchema from "schemas/posts/Post";
 import channels from "./servers/channels";
@@ -20,6 +20,7 @@ import members from "./servers/members";
 import {
     BaseServerChannel,
     Channel,
+    DMChannel,
     FriendRequests,
     Report,
     User
@@ -78,18 +79,21 @@ export default {
             })
     },
     DMChannel: {
-        recipient1: async (parent: any) =>
+        recipient1: async (parent: DMChannel) =>
             UserSchema.findOne({
                 id: parent.recipient1
             }),
-        recipient2: async (parent: any) =>
+        recipient2: async (parent: DMChannel) =>
             UserSchema.findOne({
                 id: parent.recipient2
             }),
-        messages: async (parent: any) =>
-            MessageSchema.find({
+        messages: async (parent: DMChannel) => {
+            console.log(parent);
+
+            return MessageSchema.find({
                 channel: parent.id
-            })
+            });
+        }
     },
     User: {
         servers: async (parent: User) =>

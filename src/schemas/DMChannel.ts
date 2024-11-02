@@ -4,7 +4,8 @@ const dmChannelSchema = new Schema({
     id: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     recipient1: {
         type: String,

@@ -1,10 +1,6 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
 const memberSchema = new Schema({
-    id: {
-        type: String,
-        required: true
-    },
     roles: [String],
     permissions: [],
     server: {

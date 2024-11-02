@@ -4,7 +4,8 @@ const commentSchema = new Schema({
     id: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true,
     },
     post: {
         type: String,

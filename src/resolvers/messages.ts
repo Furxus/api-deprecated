@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import MessageSchema from "schemas/servers/Message";
+import MessageSchema from "schemas/Message";
 import ChannelSchema from "schemas/servers/Channel";
 import DMChannelSchema from "schemas/DMChannel";
 import { genSnowflake, pubSub } from "struct/Server";
