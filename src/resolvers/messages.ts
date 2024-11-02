@@ -167,6 +167,7 @@ export default {
 
             channel.messages.push(message.id);
 
+            await channel.save();
             await message.save();
 
             // Send the message to the websocket
@@ -350,6 +351,9 @@ export default {
                 });
 
             await MessageSchema.deleteOne({ id: messageId });
+            await channel.updateOne({
+                $pull: { messages: messageId }
+            });
 
             // Send the message to the websocket
             await pubSub.publish(MessageEvents.MessageDeleted, {
