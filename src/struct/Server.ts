@@ -14,6 +14,7 @@ import { typeDefs as scalarTypeDefs } from "graphql-scalars";
 import { createServer } from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
+import { Server as IOServer } from "socket.io";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { graphqlUploadExpress } from "graphql-upload-ts";
@@ -28,18 +29,11 @@ import { threadId } from "worker_threads";
 import Mailgun from "mailgun.js";
 import formData from "form-data";
 import ColorThief from "color-thief-ts";
-import { Server as SocketServer } from "socket.io";
 
 const port = process.env.PORT || 4000;
 const app = express();
 
 const httpServer = createServer(app);
-const io = new SocketServer(httpServer, {
-    connectionStateRecovery: {},
-    cors: {
-        origin: "*"
-    }
-});
 
 const typeDefs = gql(
     readdirSync("src/gql")
@@ -49,7 +43,21 @@ const typeDefs = gql(
 
 const wsServer = new WebSocketServer({
     server: httpServer,
-    path: "/v2"
+    path: "/v2/graphql"
+});
+
+const io = new IOServer(httpServer, {
+    path: "/v2/socket-io",
+    cors: {
+        origin: "*"
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log("Socket connected");
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected");
+    });
 });
 
 const schema = inheritDirective(
@@ -151,7 +159,7 @@ export default class Server extends ApolloServer {
         await super.start();
         app.use(helmet());
         app.use(
-            "/v2",
+            "/v2/graphql",
             cors<cors.CorsRequest>({
                 origin: "*"
             }),
@@ -221,12 +229,9 @@ export default class Server extends ApolloServer {
 
         httpServer.listen(port, () => {
             logger.info(`Server running on port ${port}`);
-            io.on("connection", (socket) => {
-                logger.info("Socket connected: " + socket.id);
-                socket.on("disconnect", () => {
-                    logger.info("Socket disconnected: " + socket.id);
-                });
-            });
+            logger.info("GraphQL running on /v2/graphql");
+            logger.info("WebSocket running on /v2/graphql");
+            logger.info("Socket.IO running on /v2/socket-io");
         });
     }
 }
